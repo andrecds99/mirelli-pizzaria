@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirelli Pizzaria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <span>Mirelli Pizzaria</span>
+    </div>
+</header>
+
+<main>
+    <!-- Área do Cardápio -->
+    <div id="cardapio-container">
+        <div class="menu-bar">
+            <button onclick="scrollToSection('pizzas-salgadas')">Pizzas Salgadas</button>
+            <button onclick="scrollToSection('pizzas-doces')">Pizzas Doces</button>
+            <button onclick="scrollToSection('bebidas-sem-alcool')">Bebidas Sem Álcool</button>
+            <button onclick="scrollToSection('bebidas-alcoolicas')">Bebidas Alcoólicas</button>
+        </div>
+        <div id="cardapio"></div>
+    </div>
+
+    <!-- Barra Lateral -->
+    <aside class="sidebar">
+        <!-- Login -->
+        <section>
+            <h2>Login</h2>
+            <form id="formLogin">
+                <input type="email" id="emailLogin" name="emailLogin" placeholder="E-mail" required>
+                <input type="password" id="senhaLogin" name="senhaLogin" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+                <button type="button" class="link-btn">Esqueci minha senha</button>
+            </form>            
+        </section>
+        <hr>
+
+        <!-- Cadastro -->
+        <section>
+            <h2>Cadastro</h2>
+            <form id="formCadastro">
+                <input type="text" name="nome" placeholder="Nome Completo" required>
+                <input type="text" name="cpf" placeholder="CPF" required>
+                <input type="text" name="endereco" placeholder="Endereço" required>
+                <input type="tel" name="telefone" placeholder="Telefone" required>
+                <input type="email" name="email" placeholder="E-mail" required>
+                <input type="password" name="senha" placeholder="Senha" required>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </section>
+    </aside>
+</main>
+  
+
+<!-- 🧾 ÁREA DO CLIENTE (oculta até o login) -->
+<div id="areaCliente" style="display: none;">
+    <h2>Bem-vindo, <span id="nomeCliente"></span>!</h2>
+  
+    <div class="painel-cliente">
+      <button id="btnDados">📋 Meus Dados</button>
+      <button id="btnHistorico">🧾 Histórico de Pedidos</button>
+      <button id="btnSair">🚪 Sair</button>
+    </div>
+    <div id="dadosCliente" style="display: none;">
+        <h3>Meus Dados</h3>
+        <p><strong>Nome:</strong> <span id="dadosNome"></span></p>
+        <p><strong>Email:</strong> <span id="dadosEmail"></span></p>
+        <p><strong>Telefone:</strong> <span id="dadosTelefone"></span></p>
+        <p><strong>Endereço:</strong> <span id="dadosEndereco"></span></p>
+        <p><strong>CPF:</strong> <span id="dadosCPF"></span></p>
+      </div>
+    <div id="conteudoCliente">
+      <p>Selecione uma opção acima.</p>
+    </div>
+  </div>
+  
+
+<!-- Carrinho -->
+<div class="cart-bar" onclick="toggleCart()">Carrinho (<span id="cartCount">0</span>)</div>
+<div class="cart-panel" id="cartPanel">
+    <div id="cartItems"></div>
+    <div class="cart-total">Total: R$ <span id="cartTotal">0.00</span></div>
+    <button onclick="finalizarPedido()">Finalizar Pedido</button>
+</div>
+
+<!-- ✅ Mensagem de status (sucesso/erro) -->
+<div id="mensagem-status" class="mensagem-status"></div>
+
+
+<!-- Modal -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+      <h3 id="modalPizzaNome"></h3>
+      <p id="modalPizzaDescricao"></p>
+      <p>Preço Base: R$ <span id="modalPizzaPreco"></span></p>
+
+      <div id="opcaoInteiraMeia">
+          <button onclick="selecionarInteira()">Inteira</button>
+          <button onclick="selecionarMeia()">Metade</button>
+      </div>
+
+      <div id="opcoesBordaTamanho" style="display:none;">
+          <label>Tamanho:</label>
+          <select id="pizzaTamanho">
+              <option value="broto">Broto (-R$15)</option>
+              <option value="normal" selected>Normal</option>
+              <option value="gigante">Gigante (+R$40)</option>
+          </select>
+
+          <label>Borda grátis:</label>
+          <select id="borda">
+              <option value="sem">Sem borda</option>
+              <option value="requeijao">Requeijão</option>
+              <option value="cheddar">Cheddar</option>
+          </select>
+
+          <p><strong>Preço final: R$ <span id="precoFinal"></span></strong></p>
+
+          <div class="modal-buttons">
+              <button onclick="adicionarPizzaAoCarrinho()" disabled style="opacity:0.5;cursor:not-allowed;">Adicionar ao Carrinho</button>
+              <button onclick="fecharModal()">Cancelar</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script src="scripts.js"></script>
+</body>
+</html>

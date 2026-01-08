@@ -1,0 +1,309 @@
+:root {
+  --vermelho: #8B0000;
+  --dourado: #D4AF37;
+  --branco: #fff;
+  --bg: #fff8f0;
+  --texto: #222;
+}
+
+/* Reset básico */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--texto);
+  min-height: 100vh;
+}
+
+/* Cabeçalho */
+header {
+  background: var(--vermelho);
+  color: var(--branco);
+  padding: 12px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo span {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Menu do cardápio */
+.menu-bar {
+  background: var(--branco);
+  padding: 8px;
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid var(--dourado);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.menu-bar button {
+  background: none;
+  border: none;
+  font-weight: bold;
+  color: var(--vermelho);
+  cursor: pointer;
+}
+
+.menu-bar button:hover {
+  text-decoration: underline;
+}
+
+/* Layout principal */
+main {
+  display: flex;
+  gap: 20px;
+  padding: 12px;
+}
+
+#cardapio-container {
+  flex: 3;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+.sidebar {
+  flex: 1;
+  max-width: 300px;
+  background: var(--branco);
+  padding: 20px;
+  border-radius: 8px;
+  height: fit-content;
+  position: sticky;
+  top: 12px;
+}
+
+/* Categorias */
+.category h2 {
+  color: var(--vermelho);
+  border-bottom: 2px solid var(--dourado);
+  padding-bottom: 4px;
+}
+
+/* Cartão de pizza */
+.pizza {
+  background: var(--branco);
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Botões */
+button {
+  background: var(--dourado);
+  color: var(--vermelho);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--branco);
+  color: var(--vermelho);
+}
+
+/* Carrinho */
+.cart-bar {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  background: var(--vermelho);
+  color: var(--branco);
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cart-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 60px;
+  background: var(--branco);
+  color: var(--texto);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  max-height: 60vh;
+  overflow-y: auto;
+  display: none;
+  width: 260px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.cart-total {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Formulários */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+form input, form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+form button {
+  background: var(--vermelho);
+  color: var(--branco);
+}
+
+.link-btn {
+  background: none;
+  color: var(--vermelho);
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background: var(--branco);
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+  main {
+      flex-direction: column;
+  }
+
+  .sidebar {
+      max-width: 100%;
+      position: relative;
+      top: auto;
+  }
+
+  #cardapio-container {
+      max-height: none;
+  }
+}
+
+/* Estado ativo dos botões de seleção */
+#opcaoInteiraMeia button.ativo {
+  background: #8B0000 !important;
+  color: white !important;
+}
+
+/* Mensagem flutuante estilo WhatsApp */
+.cart-message {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background: #dcf8c6;
+  color: #000;
+  padding: 10px 14px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  font-size: 14px;
+  max-width: 220px;
+  text-align: left;
+}
+
+.cart-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mensagem-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #333;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity 0.4s, transform 0.4s;
+  transform: translateY(-10px);
+  z-index: 9999;
+  font-weight: bold;
+}
+.mensagem-status.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.mensagem-status.sucesso {
+  background-color: #28a745;
+}
+.mensagem-status.erro {
+  background-color: #dc3545;
+}
+
+.mensagem-status {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.4s, transform 0.4s;
+  transform: translateY(20px);
+  z-index: 1000;
+}
+
+.mensagem-status.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mensagem-status.sucesso {
+  background: #28a745;
+}
+
+.mensagem-status.erro {
+  background: #dc3545;
+}
