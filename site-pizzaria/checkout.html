@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Finalizar Pedido</title>
+</head>
+<body>
+
+<h2>Finalizar Pedido</h2>
+
+<div id="resumoPedido"></div>
+
+<h3>Endereço de Entrega</h3>
+<input type="text" id="enderecoEntrega" placeholder="Endereço completo">
+
+<h3>Forma de Pagamento</h3>
+<select id="pagamento">
+  <option value="pix">PIX</option>
+  <option value="dinheiro">Dinheiro</option>
+  <option value="cartao">Cartão</option>
+</select>
+
+<br><br>
+<button onclick="confirmarPedido()">Confirmar Pedido</button>
+
+<script src="checkout.js"></script>
+</body>
+</html>
