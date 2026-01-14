@@ -8,7 +8,6 @@ const enviarEmailConfirmacao = require('../middlewares/emailMiddleware');
 /**
  * Rota: Cadastro de cliente
  * Acesso: Público
- * Funcionalidade: Cria novo cliente com confirmação por e-mail
  */
 router.post('/cadastro', async (req, res) => {
     const { nome, email, senha, telefone, endereco } = req.body;
@@ -46,16 +45,13 @@ router.post('/cadastro', async (req, res) => {
 /**
  * Rota: Confirmação de cadastro
  * Acesso: Público
- * Funcionalidade: Valida código enviado por e-mail e ativa a conta
  */
 router.post('/confirmar', async (req, res) => {
     const { email, codigo } = req.body;
 
     try {
         const cliente = await Cliente.findOne({ email });
-        if (!cliente) {
-            return res.status(400).json({ error: "E-mail não encontrado" });
-        }
+        if (!cliente) return res.status(400).json({ error: "E-mail não encontrado" });
 
         if (cliente.codigoConfirmacao !== codigo) {
             return res.status(400).json({ error: "Código de confirmação inválido" });
@@ -74,54 +70,58 @@ router.post('/confirmar', async (req, res) => {
 /**
  * Rota: Login
  * Acesso: Público
- * Funcionalidade: Autentica cliente e retorna token JWT
+ * Observação: Agora o JWT inclui "cliente: true"
  */
 router.post('/login', async (req, res) => {
     const { email, senha } = req.body;
 
     try {
         const cliente = await Cliente.findOne({ email });
-        if (!cliente) {
-            return res.status(400).json({ error: "E-mail ou senha incorretos" });
-        }
+        if (!cliente) return res.status(400).json({ error: "E-mail ou senha incorretos" });
 
         const senhaValida = await bcrypt.compare(senha, cliente.senha);
-        if (!senhaValida) {
-            return res.status(400).json({ error: "E-mail ou senha incorretos" });
-        }
+        if (!senhaValida) return res.status(400).json({ error: "E-mail ou senha incorretos" });
 
         if (!cliente.confirmado) {
             return res.status(403).json({ error: "Conta não confirmada. Verifique seu e-mail." });
         }
 
+        // JWT atualizado com "cliente: true"
         const token = jwt.sign(
-            { id: cliente._id },
+            { id: cliente._id, cliente: true },
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
 
-        res.json({ token });
+        res.json({
+            token,
+            cliente: {
+                _id: cliente._id,
+                nome: cliente.nome,
+                email: cliente.email,
+                telefone: cliente.telefone,
+                endereco: cliente.endereco
+            }
+        });
+
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: "Erro interno no servidor" });
     }
 });
 
 /**
  * Rota: Solicitar redefinição de senha
- * Acesso: Público
- * Funcionalidade: Gera código temporário e envia por e-mail ao cliente
  */
 router.post('/esqueci-senha', async (req, res) => {
     const { email } = req.body;
 
     try {
         const cliente = await Cliente.findOne({ email });
-        if (!cliente) {
-            return res.status(400).json({ error: "E-mail não encontrado" });
-        }
+        if (!cliente) return res.status(400).json({ error: "E-mail não encontrado" });
 
         const codigoReset = Math.floor(100000 + Math.random() * 900000).toString();
-        cliente.codigoConfirmacao = codigoReset; // reutilizando campo para simplicidade
+        cliente.codigoConfirmacao = codigoReset;
         await cliente.save();
 
         await enviarEmailConfirmacao(email, cliente.nome, codigoReset);
@@ -134,17 +134,13 @@ router.post('/esqueci-senha', async (req, res) => {
 
 /**
  * Rota: Redefinir senha
- * Acesso: Público
- * Funcionalidade: Altera a senha do cliente validando código enviado por e-mail
  */
 router.post('/redefinir-senha', async (req, res) => {
     const { email, codigo, novaSenha } = req.body;
 
     try {
         const cliente = await Cliente.findOne({ email });
-        if (!cliente) {
-            return res.status(400).json({ error: "E-mail não encontrado" });
-        }
+        if (!cliente) return res.status(400).json({ error: "E-mail não encontrado" });
 
         if (cliente.codigoConfirmacao !== codigo) {
             return res.status(400).json({ error: "Código inválido" });

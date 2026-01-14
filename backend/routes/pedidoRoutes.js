@@ -1,20 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const Pedido = require('../models/Pedido');
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddlewareCliente = require('../middlewares/authMiddlewareCliente');
 const Counter = require('../models/Counter');
 const Idempotency = require('../models/Idempotency');
-const { getIO } = require('../socket'); // Criar módulo socket.js para exportar io
+const { getIO } = require('../socket'); // socket.js precisa exportar io
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddlewareCliente, async (req, res) => {
     const idKey = req.header('Idempotency-Key');
     if (!idKey) return res.status(400).json({ error: 'Idempotency-Key obrigatório' });
 
     try {
         const existing = await Idempotency.findOne({ key: idKey });
-        if (existing) {
-            return res.status(409).json({ error: 'Pedido já processado anteriormente' });
-        }
+        if (existing) return res.status(409).json({ error: 'Pedido já processado anteriormente' });
 
         const { itens, total, pagamento, endereco, telefone, trocoPara, observacoes, metodoEntrega } = req.body;
 
@@ -22,7 +20,7 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: "Todos os campos obrigatórios" });
         }
 
-        // Geração de numeroPedido sequencial
+        // Número sequencial do pedido
         const counter = await Counter.findOneAndUpdate(
             { name: "pedido" },
             { $inc: { seq: 1 } },
@@ -30,7 +28,7 @@ router.post('/', authMiddleware, async (req, res) => {
         );
         const numeroPedido = counter.seq;
 
-        // Geração token PIX
+        // Token PIX
         const tokenPix = pagamento === "pix" ? "PED" + Date.now() : null;
 
         const pedido = new Pedido({
@@ -51,9 +49,9 @@ router.post('/', authMiddleware, async (req, res) => {
         await pedido.save();
         await Idempotency.create({ key: idKey });
 
+        // Emitir novo pedido para painel administrativo
         const io = getIO();
         io.emit('new-order', pedido);
-        
 
         res.status(201).json({
             pedido,
@@ -61,7 +59,9 @@ router.post('/', authMiddleware, async (req, res) => {
                 ? `Pagamento via PIX selecionado. Use o token: ${tokenPix}`
                 : "Pedido criado com pagamento no local."
         });
+
     } catch (err) {
+        console.error("Erro no pedidoRoutes:", err);
         res.status(500).json({ error: err.message });
     }
 });
