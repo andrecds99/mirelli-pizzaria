@@ -1,22 +1,32 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = function (req, res, next) {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+module.exports = function authMiddlewareCliente(req, res, next) {
+  const authHeader = req.headers.authorization;
 
-    if (!token) {
-        return res.status(401).json({ error: "Acesso negado. Token não fornecido." });
+  if (!authHeader) {
+    return res.status(401).json({ error: "Token não fornecido." });
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // 🔎 LOG CORRETO (agora dentro do escopo)
+    console.log("JWT DECODED:", decoded);
+
+    // 🔐 Garante que é cliente
+    if (!decoded.cliente) {
+      return res.status(403).json({ error: "Acesso não autorizado." });
     }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Disponibiliza dados para as rotas
+    req.clienteId = decoded.id;
+    req.tokenPayload = decoded;
 
-        if (!decoded.cliente) {
-            return res.status(403).json({ error: "Acesso negado. Usuário não é cliente." });
-        }
-
-        req.clienteId = decoded.id; // ID do cliente
-        next();
-    } catch (err) {
-        return res.status(400).json({ error: "Token inválido." });
-    }
+    next();
+  } catch (err) {
+    console.error("Erro no authMiddlewareCliente:", err.message);
+    return res.status(401).json({ error: "Token inválido ou expirado." });
+  }
 };

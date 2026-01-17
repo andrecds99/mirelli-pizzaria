@@ -84,5 +84,3 @@ function finalizarPedido() {
   // ✅ agora VAI redirecionar
   window.location.href = "checkout.html";
 }
-
-  

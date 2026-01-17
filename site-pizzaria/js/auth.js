@@ -1,6 +1,17 @@
-// ===============================
-// CADASTRO DE CLIENTE
-// ===============================
+/**
+ * ======================================
+ * AUTH.JS — AUTENTICAÇÃO DO CLIENTE
+ * ======================================
+ * - Cadastro
+ * - Login
+ * - Persistência de sessão
+ * - Preenchimento da área do cliente
+ * - Logout
+ */
+
+/* =====================================================
+ * CADASTRO DE CLIENTE
+ * ===================================================== */
 const formCadastro = document.getElementById("formCadastro");
 
 if (formCadastro) {
@@ -10,40 +21,46 @@ if (formCadastro) {
     const dados = {
       nome: e.target.nome.value.trim(),
       cpf: e.target.cpf.value.trim(),
-      endereco: e.target.endereco.value.trim(),
       telefone: e.target.telefone.value.trim(),
       email: e.target.email.value.trim(),
       senha: e.target.senha.value.trim(),
+
+      // 🔴 IMPORTANTE: endereço como OBJETO
+      endereco: {
+        rua: e.target.endereco.value.trim(),
+        bairro: "",
+        cidade: "",
+        estado: ""
+      }
     };
 
     try {
       const response = await fetch("http://localhost:5000/api/clientes/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados),
+        body: JSON.stringify(dados)
       });
 
       const resultado = await response.json();
 
       if (!response.ok) {
-        alert(resultado.error || "Erro ao cadastrar!");
+        alert(resultado.error || "Erro ao cadastrar.");
         return;
       }
 
-      alert("Cadastro realizado com sucesso!");
-      e.target.reset();
+      alert("✅ Cadastro realizado com sucesso!");
+      formCadastro.reset();
 
     } catch (err) {
-      alert("Erro ao conectar ao servidor!");
-      console.error(err);
+      console.error("Erro no cadastro:", err);
+      alert("Erro ao conectar ao servidor.");
     }
   });
 }
 
-
-// ===============================
-// LOGIN DO CLIENTE
-// ===============================
+/* =====================================================
+ * LOGIN DO CLIENTE
+ * ===================================================== */
 const formLogin = document.getElementById("formLogin");
 
 if (formLogin) {
@@ -54,83 +71,73 @@ if (formLogin) {
     const senha = document.getElementById("senhaLogin").value.trim();
 
     try {
-      const resposta = await fetch("http://localhost:5000/api/clientes/login", {
+      const response = await fetch("http://localhost:5000/api/clientes/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ email, senha })
       });
 
-      const dados = await resposta.json();
-      console.log("RESPOSTA LOGIN:", dados);
+      const data = await response.json();
+      console.log("LOGIN RESPONSE:", data);
 
-      if (!resposta.ok) {
-        alert(dados.error || "Erro ao fazer login!");
+      if (!response.ok) {
+        alert(data.error || "Erro ao fazer login.");
         return;
       }
 
-      // ✅ SUPORTE A QUALQUER PADRÃO DE BACKEND
-      const cliente = dados.cliente || dados.user || dados.usuario;
-
-      if (!cliente) {
-        alert("Erro ao recuperar dados do cliente.");
-        console.error("Resposta inesperada:", dados);
+      if (!data.token || !data.cliente) {
+        console.error("Resposta inválida:", data);
+        alert("Erro interno de autenticação.");
         return;
       }
 
-      // Salva cliente
-      localStorage.setItem("clienteLogado", JSON.stringify(cliente));
+      // 🔐 SALVA SESSÃO
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("clienteLogado", JSON.stringify(data.cliente));
 
-      // Salva token se existir
-      if (dados.token) {
-        localStorage.setItem("token", dados.token);
-      }
+      // 🔄 Recarrega para atualizar UI
+      location.reload();
 
-      // UI
-      const sidebar = document.querySelector(".sidebar");
-      if (sidebar) sidebar.style.display = "none";
-
-      const areaCliente = document.getElementById("areaCliente");
-      if (areaCliente) areaCliente.style.display = "block";
-
-      const nomeCliente = document.getElementById("nomeCliente");
-      if (nomeCliente) nomeCliente.textContent = cliente.nome;
-
-      preencherDadosCliente(cliente);
-
-    } catch (erro) {
-      alert("Erro ao conectar ao servidor!");
-      console.error(erro);
+    } catch (err) {
+      console.error("Erro no login:", err);
+      alert("Erro ao conectar ao servidor.");
     }
   });
 }
 
-
-// ===============================
-// PREENCHE OS DADOS DO CLIENTE
-// ===============================
+/* =====================================================
+ * PREENCHER DADOS DO CLIENTE
+ * ===================================================== */
 function preencherDadosCliente(cliente) {
   if (!cliente) return;
 
-  const set = (id, valor) => {
+  const setText = (id, valor) => {
     const el = document.getElementById(id);
     if (el) el.textContent = valor || "";
   };
 
-  set("dadosNome", cliente.nome);
-  set("dadosEmail", cliente.email);
-  set("dadosTelefone", cliente.telefone);
-  set("dadosEndereco", cliente.endereco);
-  set("dadosCPF", cliente.cpf);
+  setText("dadosNome", cliente.nome);
+  setText("dadosEmail", cliente.email);
+  setText("dadosTelefone", cliente.telefone);
+  setText("dadosCPF", cliente.cpf);
+
+  if (cliente.endereco) {
+    const e = cliente.endereco;
+    setText(
+      "dadosEndereco",
+      `${e.rua || ""} ${e.bairro || ""} ${e.cidade || ""} ${e.estado || ""}`.trim()
+    );
+  }
 }
 
-
-// ===============================
-// MANTER LOGIN AO RECARREGAR
-// ===============================
+/* =====================================================
+ * MANTER LOGIN AO RECARREGAR
+ * ===================================================== */
 window.addEventListener("DOMContentLoaded", () => {
   const clienteStr = localStorage.getItem("clienteLogado");
+  const token = localStorage.getItem("token");
 
-  if (!clienteStr) return;
+  if (!clienteStr || !token) return;
 
   try {
     const cliente = JSON.parse(clienteStr);
@@ -146,16 +153,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
     preencherDadosCliente(cliente);
 
-  } catch (e) {
-    console.warn("Sessão inválida, limpando localStorage");
+  } catch (err) {
+    console.warn("Sessão inválida. Limpando dados.");
     localStorage.removeItem("clienteLogado");
+    localStorage.removeItem("token");
   }
 });
 
-
-// ===============================
-// BOTÃO "MEUS DADOS"
-// ===============================
+/* =====================================================
+ * BOTÃO "MEUS DADOS"
+ * ===================================================== */
 const btnDados = document.getElementById("btnDados");
 if (btnDados) {
   btnDados.addEventListener("click", () => {
@@ -164,10 +171,9 @@ if (btnDados) {
   });
 }
 
-
-// ===============================
-// LOGOUT
-// ===============================
+/* =====================================================
+ * LOGOUT
+ * ===================================================== */
 const btnSair = document.getElementById("btnSair");
 
 if (btnSair) {

@@ -1,39 +1,41 @@
-import React from "react";
-import PainelPedidos from "./components/PainelPedidos";
-import Relatorio from "./components/Relatorio";
-import "./App.css";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Login from "./pages/Login";
 import Pedidos from "./pages/Pedidos";
+
+// Componentes existentes (mantidos no projeto)
+import PainelPedidos from "./components/PainelPedidos";
+import Relatorio from "./components/Relatorio";
+
 import "./styles.css";
+import "./App.css";
 
+export default function App() {
+  const [token, setToken] = useState(localStorage.getItem("adminToken"));
 
-function App() {
-    return (
-        <div className="App">
-            <h1>Painel Administrativo</h1>
-            <PainelPedidos />
-            <Relatorio />
-        </div>
-    );
-}
-
-function App() {
-    const [token, setToken] = useState(localStorage.getItem("adminToken"));
-  
-    function onLogin(newToken) {
-      setToken(newToken);
-    }
-  
-    function onLogout() {
-      setToken(null);
-    }
-  
-    return (
-      <div className="app-root">
-        {!token ? <Login onLogin={onLogin} /> : <Pedidos token={token} onLogout={onLogout} />}
-      </div>
-    );
+  function onLogin(newToken) {
+    localStorage.setItem("adminToken", newToken);
+    setToken(newToken);
   }
 
-export default App;
+  function onLogout() {
+    localStorage.removeItem("adminToken");
+    setToken(null);
+  }
+
+  return (
+    <div className="app-root">
+      {!token ? (
+        <Login onLogin={onLogin} />
+      ) : (
+        <>
+          {/* Página principal do painel */}
+          <Pedidos token={token} onLogout={onLogout} />
+
+          {/* Componentes extras (opcionais / futuros) */}
+          {/* <PainelPedidos /> */}
+          {/* <Relatorio /> */}
+        </>
+      )}
+    </div>
+  );
+}
