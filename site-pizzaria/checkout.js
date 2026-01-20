@@ -8,6 +8,59 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const resumo = document.getElementById("resumoPedido");
+  let total = 0;
+
+  // ===============================
+  // RESUMO DO PEDIDO
+  // ===============================
+  pedido.itens.forEach((item, index) => {
+    const produto = item.produto || item;
+    total += item.preco;
+
+    resumo.innerHTML += `
+      <div class="item">
+        <strong>${produto.nome}</strong><br>
+
+        ${produto.tamanho ? `Tamanho: ${produto.tamanho}<br>` : ""}
+        ${produto.borda ? `Borda: ${produto.borda}<br>` : ""}
+        ${produto.sabor ? `Sabor: ${produto.sabor}<br>` : ""}
+        ${produto.meioASabor ? `Meio a meio: ${produto.meioASabor}<br>` : ""}
+
+        Quantidade: ${item.quantidade || 1}<br>
+        Preço: R$ ${item.preco.toFixed(2)}
+
+        <textarea
+          data-index="${index}"
+          placeholder="Observações desta pizza (opcional)"
+        ></textarea>
+      </div>
+    `;
+  });
+
+  resumo.innerHTML += `<h3>Total: R$ ${total.toFixed(2)}</h3>`;
+
+  // ===============================
+  // ENDEREÇO CADASTRADO (VISUAL)
+  // ===============================
+  const enderecoEl = document.getElementById("enderecoCadastrado");
+  enderecoEl.innerText = cliente.endereco
+    ? cliente.endereco
+    : "Nenhum endereço cadastrado";
+
+  // ===============================
+  // ENDEREÇO ALTERNATIVO
+  // ===============================
+  const chkAlt = document.getElementById("usarEnderecoAlternativo");
+  const blocoAlt = document.getElementById("enderecoAlternativo");
+
+  chkAlt.addEventListener("change", () => {
+    blocoAlt.style.display = chkAlt.checked ? "block" : "none";
+  });
+
+  // ===============================
+  // PAGAMENTO → TROCO
+  // ===============================
   const pagamentoSelect = document.getElementById("pagamento");
   const blocoTroco = document.getElementById("blocoTroco");
 
@@ -15,32 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
     blocoTroco.style.display =
       pagamentoSelect.value === "dinheiro" ? "block" : "none";
   });
-
-  // ===============================
-  // RESUMO DO PEDIDO
-  // ===============================
-  const resumo = document.getElementById("resumoPedido");
-  let total = 0;
-
-  pedido.itens.forEach((item, index) => {
-    total += item.preco;
-
-    resumo.innerHTML += `
-      <div class="item">
-        <strong>${item.nome}</strong><br>
-        Tamanho: ${item.tamanho}<br>
-        Borda: ${item.borda}<br>
-        Preço: R$ ${item.preco.toFixed(2)}<br>
-        <textarea data-index="${index}"
-          placeholder="Ex: sem cebola, massa bem assada"></textarea>
-      </div>
-    `;
-  });
-
-  resumo.innerHTML += `<h3>Total: R$ ${total.toFixed(2)}</h3>`;
-
-  document.getElementById("enderecoCadastrado").innerText =
-    cliente.endereco || "Nenhum endereço cadastrado";
 });
 
 // ===============================
@@ -50,18 +77,23 @@ async function confirmarPedido() {
   try {
     const pedido = JSON.parse(localStorage.getItem("pedidoEmAndamento"));
     const cliente = JSON.parse(localStorage.getItem("clienteLogado"));
-    const token = localStorage.getItem("token"); // 🔑 token usado pelo middleware
+    const token = localStorage.getItem("token");
 
     if (!pedido || !cliente || !token) {
       alert("Sessão expirada.");
       return;
     }
 
-    // Observações por item
+    // ===============================
+    // OBSERVAÇÕES POR ITEM
+    // ===============================
     document.querySelectorAll("textarea[data-index]").forEach(t => {
-      pedido.itens[t.dataset.index].observacao = t.value;
+      pedido.itens[t.dataset.index].observacoes = t.value;
     });
 
+    // ===============================
+    // PAGAMENTO
+    // ===============================
     const pagamento = document.getElementById("pagamento").value;
     if (!pagamento) {
       alert("Selecione a forma de pagamento");
@@ -77,41 +109,55 @@ async function confirmarPedido() {
       }
     }
 
+    // ===============================
+    // ENDEREÇO
+    // ===============================
+    let endereco;
+
+    if (document.getElementById("usarEnderecoAlternativo").checked) {
+      endereco = {
+        tipo: "alternativo",
+        logradouro: document.getElementById("altLogradouro").value,
+        numero: document.getElementById("altNumero").value,
+        bairro: document.getElementById("altBairro").value,
+        cidade: document.getElementById("altCidade").value,
+        cep: document.getElementById("altCep").value,
+        observacoes: document.getElementById("altObs").value || ""
+      };
+    } else {
+      endereco = {
+        tipo: "cadastrado",
+        logradouro: cliente.endereco || ""
+      };
+    }
+
+    // ===============================
+    // PAYLOAD FINAL
+    // ===============================
     const payload = {
       itens: pedido.itens.map(item => ({
         produto: {
-          nome: item.nome,
-          sabor: item.sabor || null,
-          meioASabor: item.meioASabor || null,
-          tamanho: item.tamanho,
-          borda: item.borda,
-          observacoes: item.observacao || ""
+          nome: item.produto?.nome || item.nome,
+          sabor: item.produto?.sabor || null,
+          meioASabor: item.produto?.meioASabor || null,
+          tamanho: item.produto?.tamanho || null,
+          borda: item.produto?.borda || null,
+          observacoes: item.observacoes || ""
         },
         quantidade: item.quantidade || 1,
         preco: item.preco
       })),
-    
+
       total: pedido.itens.reduce((s, i) => s + i.preco, 0),
-    
       pagamento,
-    
-      telefone: cliente.telefone, // ⚠️ obrigatório
-    
-      endereco: {                 // ⚠️ TEM que ser objeto
-        tipo: "cadastrado",
-        logradouro: cliente.endereco.logradouro || "",
-        numero: cliente.endereco.numero || "",
-        bairro: cliente.endereco.bairro || "",
-        cidade: cliente.endereco.cidade || "",
-        cep: cliente.endereco.cep || "",
-        observacoes: ""
-      },
-    
+      trocoPara,
+      endereco,
       metodoEntrega: "delivery",
-      trocoPara
+      telefone: cliente.telefone
     };
-    
-    console.log("PAYLOAD ENVIADO:", payload);
+
+    console.log("📦 PAYLOAD:", payload);
+
     const res = await fetch("http://localhost:5000/api/pedidos", {
       method: "POST",
       headers: {
@@ -123,19 +169,15 @@ async function confirmarPedido() {
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
+      throw new Error(await res.text());
     }
-
-    const data = await res.json();
-    console.log("✅ Pedido enviado:", data);
 
     localStorage.removeItem("pedidoEmAndamento");
     alert("Pedido realizado com sucesso!");
     window.location.href = "pedido-sucesso.html";
 
   } catch (err) {
-    console.error("Erro no envio:", err);
+    console.error("Erro ao enviar pedido:", err);
     alert("Erro ao enviar pedido.");
   }
 }

@@ -1,42 +1,88 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Checkout</title>
+
   <style>
-    body { font-family: Arial; padding: 20px; }
-    .item { border-bottom: 1px solid #ccc; padding: 10px 0; }
-    textarea, input, select { width: 100%; margin-top: 6px; padding: 6px; }
-    .bloco { margin-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .item {
+      border-bottom: 1px solid #ccc;
+      padding: 12px 0;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      margin-top: 6px;
+      padding: 6px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .bloco {
+      margin-top: 25px;
+    }
+
+    #enderecoAlternativo {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed #aaa;
+      display: none;
+    }
+
+    #blocoTroco {
+      display: none;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
   </style>
+
 </head>
 <body>
 
 <h2>Resumo do Pedido</h2>
 <div id="resumoPedido"></div>
 
+<!-- ENDEREÇO -->
+
 <div class="bloco">
   <h3>Endereço de Entrega</h3>
 
   <p><strong>Endereço cadastrado:</strong></p>
   <p id="enderecoCadastrado"></p>
-  <textarea id="obsEntrega" placeholder="Observação da entrega (opcional)"></textarea>
 
   <label>
-    <input type="checkbox" id="usarOutroEndereco">
+    <input type="checkbox" id="usarEnderecoAlternativo">
     Usar outro endereço
   </label>
 
-  <div id="enderecoAlternativo" style="display:none;">
-    <input id="cep" placeholder="CEP">
-    <input id="rua" placeholder="Rua">
-    <input id="bairro" placeholder="Bairro">
-    <input id="cidade" placeholder="Cidade">
-    <input id="estado" placeholder="UF">
-    <input id="numero" placeholder="Número">
-    <textarea id="obsEntrega" placeholder="Observação da entrega (opcional)"></textarea>
+  <div id="enderecoAlternativo">
+    <input id="altCep" placeholder="CEP">
+    <input id="altLogradouro" placeholder="Rua">
+    <input id="altNumero" placeholder="Número">
+    <input id="altBairro" placeholder="Bairro">
+    <input id="altCidade" placeholder="Cidade">
+    <textarea id="altObs" placeholder="Observação da entrega (opcional)"></textarea>
   </div>
 </div>
+
+<!-- PAGAMENTO -->
 
 <div class="bloco">
   <h3>Forma de Pagamento</h3>
@@ -47,22 +93,16 @@
     <option value="debito">Débito</option>
     <option value="credito">Crédito</option>
   </select>
+
+  <div id="blocoTroco">
+    <label>Troco para quanto?</label>
+    <input type="number" id="trocoPara" placeholder="Ex: 100">
+  </div>
 </div>
 
-<!-- TROCO -->
-<div id="blocoTroco" style="display:none; margin-top:10px;">
-  <label>Troco para quanto?</label>
-  <input
-    type="number"
-    id="trocoPara"
-    placeholder="Ex: 100"
-    min="0"
-  />
-</div>
-
-<br>
 <button onclick="confirmarPedido()">Confirmar Pedido</button>
 
 <script src="checkout.js"></script>
+
 </body>
 </html>
