@@ -62,3 +62,43 @@ body {
   
   .error { color: #c0392b; }
   
+  .pedidos-lista {
+    margin-top: 16px;
+  }
+  
+  .pedido-card {
+    margin-bottom: 16px;
+    padding: 14px;
+    border-radius: 8px;
+    color: #fff;
+  }
+  
+  .pedido-card h3 {
+    margin-top: 0;
+  }
+  
+  /* TEMPO */
+  .pedido-ok {
+    background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  }
+  
+  .pedido-atencao {
+    background: linear-gradient(135deg, #f9a825, #f57f17);
+    color: #000;
+  }
+  
+  .pedido-atrasado {
+    background: linear-gradient(135deg, #c62828, #8e0000);
+  }
+  
+  /* STATUS FINAIS */
+  .pedido-entregue {
+    background: #2e7d32;
+    opacity: 0.85;
+  }
+  
+  .pedido-cancelado {
+    background: #212121;
+    opacity: 0.7;
+  }
+  

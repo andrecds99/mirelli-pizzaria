@@ -1,10 +1,13 @@
+// src/App.jsx
 import React, { useState } from "react";
+import { BrowserRouter } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Pedidos from "./pages/Pedidos";
 
-// Componentes existentes (mantidos no projeto)
+// Componentes existentes (opcionais)
 import PainelPedidos from "./components/PainelPedidos";
-import Relatorio from "./components/Relatorio";
+import Relatorio from "./components/RelatorioCaixa";
 
 import "./styles.css";
 import "./App.css";
@@ -23,19 +26,20 @@ export default function App() {
   }
 
   return (
-    <div className="app-root">
-      {!token ? (
-        <Login onLogin={onLogin} />
-      ) : (
-        <>
-          {/* Página principal do painel */}
-          <Pedidos token={token} onLogout={onLogout} />
+    <BrowserRouter>
+      <div className="app-root">
+        {!token ? (
+          <Login onLogin={onLogin} />
+        ) : (
+          <>
+            <Pedidos token={token} onLogout={onLogout} />
 
-          {/* Componentes extras (opcionais / futuros) */}
-          {/* <PainelPedidos /> */}
-          {/* <Relatorio /> */}
-        </>
-      )}
-    </div>
+            {/* Futuros */}
+            {/* <PainelPedidos /> */}
+            {/* <Relatorio /> */}
+          </>
+        )}
+      </div>
+    </BrowserRouter>
   );
 }

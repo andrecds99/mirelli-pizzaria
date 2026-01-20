@@ -1,110 +1,110 @@
-const mongoose = require("mongoose");
+  const mongoose = require("mongoose");
 
-const ItemSchema = new mongoose.Schema(
-  {
-    produto: {
-      nome: { type: String, required: true },
-      sabor: String,
-      meioASabor: String,
-      tamanho: String,
-      borda: String,
+  const ItemSchema = new mongoose.Schema(
+    {
+      produto: {
+        nome: { type: String, required: true },
+        sabor: String,
+        meioASabor: String,
+        tamanho: String,
+        borda: String,
+        observacoes: String
+      },
+      quantidade: { type: Number, default: 1 },
+      preco: { type: Number, required: true }
+    },
+    { _id: false }
+  );
+
+  const EnderecoSchema = new mongoose.Schema(
+    {
+      tipo: {
+        type: String,
+        enum: ["cadastrado", "alternativo"],
+        required: true
+      },
+      logradouro: String,
+      numero: String,
+      bairro: String,
+      cidade: String,
+      cep: String,
       observacoes: String
     },
-    quantidade: { type: Number, default: 1 },
-    preco: { type: Number, required: true }
-  },
-  { _id: false }
-);
+    { _id: false }
+  );
 
-const EnderecoSchema = new mongoose.Schema(
-  {
-    tipo: {
-      type: String,
-      enum: ["cadastrado", "alternativo"],
+  const PedidoSchema = new mongoose.Schema({
+    numeroPedido: {
+      type: Number,
+      required: true,
+      unique: true
+    },
+
+    // Referência real ao cliente
+    cliente: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Cliente",
       required: true
     },
-    logradouro: String,
-    numero: String,
-    bairro: String,
-    cidade: String,
-    cep: String,
-    observacoes: String
-  },
-  { _id: false }
-);
 
-const PedidoSchema = new mongoose.Schema({
-  numeroPedido: {
-    type: Number,
-    required: true,
-    unique: true
-  },
+    // Snapshot do cliente no momento do pedido
+    clienteInfo: {
+      nome: { type: String, required: true },
+      telefone: { type: String, required: true }
+    },
 
-  // Referência real ao cliente
-  cliente: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Cliente",
-    required: true
-  },
+    endereco: {
+      type: EnderecoSchema,
+      required: true
+    },
 
-  // Snapshot do cliente no momento do pedido
-  clienteInfo: {
-    nome: { type: String, required: true },
-    telefone: { type: String, required: true }
-  },
+    itens: {
+      type: [ItemSchema],
+      validate: v => v.length > 0
+    },
 
-  endereco: {
-    type: EnderecoSchema,
-    required: true
-  },
+    total: {
+      type: Number,
+      required: true
+    },
 
-  itens: {
-    type: [ItemSchema],
-    validate: v => v.length > 0
-  },
+    pagamento: {
+      type: String,
+      enum: ["pix", "dinheiro", "debito", "credito"],
+      required: true
+    },
 
-  total: {
-    type: Number,
-    required: true
-  },
+    trocoPara: {
+      type: Number,
+      default: null
+    },
 
-  pagamento: {
-    type: String,
-    enum: ["pix", "dinheiro", "debito", "credito"],
-    required: true
-  },
+    statusPagamento: {
+      type: String,
+      enum: ["pendente", "pago"],
+      default: "pendente"
+    },
 
-  trocoPara: {
-    type: Number,
-    default: null
-  },
+    metodoEntrega: {
+      type: String,
+      enum: ["delivery", "retirada"],
+      default: "delivery"
+    },
 
-  statusPagamento: {
-    type: String,
-    enum: ["pendente", "pago"],
-    default: "pendente"
-  },
+    observacoes: String,
 
-  metodoEntrega: {
-    type: String,
-    enum: ["delivery", "retirada"],
-    default: "delivery"
-  },
+    tokenPix: String,
 
-  observacoes: String,
+    statusPedido: {
+      type: String,
+      enum: ["novo", "em preparo", "pronto", "saiu", "entregue", "cancelado"],
+      default: "novo"
+    },
 
-  tokenPix: String,
+    dataPedido: {
+      type: Date,
+      default: Date.now
+    }
+  });
 
-  statusPedido: {
-    type: String,
-    enum: ["novo", "em preparo", "pronto", "saiu", "entregue", "cancelado"],
-    default: "novo"
-  },
-
-  dataPedido: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-module.exports = mongoose.model("Pedido", PedidoSchema);
+  module.exports = mongoose.model("Pedido", PedidoSchema);
