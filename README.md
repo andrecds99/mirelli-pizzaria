@@ -1,64 +1,134 @@
-# 🍕 Mirelli Pizzaria — Sistema Completo de Pedidos Online
+🍕 Mirelli Pizzaria — Sistema Completo de Pedidos Online
 
-Sistema completo de pedidos online para pizzaria, com **frontend público**, **backend robusto**, **painel administrativo em tempo real** e **controle de pedidos via WebSocket**.
+Sistema completo de pedidos online desenvolvido para uso real em pizzarias e pequenos comércios, com frontend público para clientes, backend robusto e painel administrativo em tempo real para operação diária.
 
-Projeto desenvolvido com foco em **uso real**, **organização de código**, **boas práticas** e **escala futura**.
+Projeto focado em fluxo operacional real, controle de pedidos, caixa e comunicação instantânea entre cliente, cozinha e administração.
 
----
+🚀 Funcionalidades
+👤 Cliente (Frontend Público)
 
-## 🚀 Funcionalidades
+Cadastro e login seguro (hash de senha com bcrypt)
 
-### 👤 Cliente
-- Cadastro com hash de senha (bcrypt)
-- Login autenticado
-- Criação de pedidos
-- Escolha de método de pagamento (PIX, dinheiro, débito, crédito)
-- Acompanhamento de pedidos
+Criação de pedidos completos
 
-### 🧑‍🍳 Administração
-- Login administrativo com JWT
-- Painel de pedidos em tempo real (Socket.IO)
-- Confirmação manual de pagamentos PIX
-- Filtro de pedidos por status
-- Fechamento de caixa diário
-- Geração de relatórios em PDF e CSV
+Escolha de método de entrega:
 
----
+Delivery
 
-## 🛠 Tecnologias Utilizadas
+Retirada no balcão
 
-### Backend
-- Node.js
-- Express
-- MongoDB + Mongoose
-- JWT (autenticação)
-- Bcrypt (segurança)
-- Socket.IO
-- PDFKit
-- JSON2CSV
+Endereço salvo com observações de entrega
 
-### Frontend
-- HTML5
-- CSS3
-- JavaScript
-- React (Painel Administrativo)
-- Axios
+Escolha de forma de pagamento:
 
-### Infra / Outros
-- Git & GitHub
-- Postman
-- Nodemon
-- Dotenv
+PIX
 
----
+Dinheiro (com troco)
 
-## 🧩 Arquitetura do Projeto
+Débito
 
-```bash
+Crédito
+
+Acompanhamento do status do pedido em tempo real
+
+🧑‍🍳 Administração (Painel Administrativo)
+
+Login administrativo com autenticação JWT
+
+Recebimento de pedidos em tempo real (Socket.IO)
+
+Organização de pedidos por abas:
+
+Pedidos ativos
+
+Pedidos concluídos / cancelados
+
+Fluxo de status controlado:
+
+Novo
+
+Em preparo
+
+Pronto
+
+Saiu para entrega
+
+Entregue
+
+Concluído
+
+Confirmação manual de pagamentos (ex: PIX)
+
+Impressão de pedidos (modelo térmico 80mm)
+
+Controle visual de tempo do pedido:
+
+Pedido dentro do prazo
+
+Pedido em atenção
+
+Pedido atrasado
+
+Histórico imutável de pedidos concluídos
+
+Relatório de caixa por período
+
+Fechamento de caixa baseado apenas em pedidos concluídos
+
+🧩 Fluxo Operacional (Vida Real)
+Cliente faz pedido
+→ Pedido chega no painel em tempo real
+→ Cozinha inicia preparo
+→ Pedido sai para entrega ou retirada
+→ Pedido é entregue
+→ Pagamento confirmado
+→ Pedido entra no fechamento de caixa
+
+
+Esse fluxo reflete exatamente a rotina de uma pizzaria.
+
+🛠 Tecnologias Utilizadas
+Backend
+
+Node.js
+
+Express
+
+MongoDB + Mongoose
+
+JWT (autenticação)
+
+Bcrypt (segurança)
+
+Socket.IO
+
+Frontend
+
+HTML5
+
+CSS3
+
+JavaScript
+
+React (Painel Administrativo)
+
+Axios
+
+Infra / Outros
+
+Git & GitHub
+
+Postman
+
+Nodemon
+
+Dotenv
+
+🧱 Arquitetura do Projeto
 mirelli-pizzaria/
 ├── backend/        # API REST + Socket.IO
 ├── admin-panel/    # Painel administrativo (React)
-├── site-pizzaria/  # Frontend público (HTML/CSS/JS)
+├── site-pizzaria/  # Frontend público (clientes)
 └── README.md
 
 ▶️ Como Rodar o Projeto Localmente
@@ -66,7 +136,7 @@ Pré-requisitos
 
 Node.js >= 18
 
-MongoDB local ou Atlas
+MongoDB local ou MongoDB Atlas
 
 NPM ou Yarn
 
@@ -75,11 +145,11 @@ cd backend
 npm install
 npm run dev
 
-Frontend público
+Frontend Público
 cd site-pizzaria
 # abrir index.html no navegador
 
-Painel administrativo
+Painel Administrativo
 cd admin-panel
 npm install
 npm start
@@ -90,23 +160,29 @@ O painel permite:
 
 Visualizar pedidos em tempo real
 
+Gerenciar status dos pedidos
+
 Confirmar pagamentos
 
-Atualizar status dos pedidos
+Imprimir pedidos
 
-Enviar pedidos para a cozinha
+Separar pedidos ativos e concluídos
 
-Comunicação em tempo real feita via Socket.IO.
+Gerar relatórios de caixa
+
+Comunicação em tempo real via Socket.IO.
 
 📌 Status do Projeto
 
+🟢 Funcional e utilizável em ambiente real
 🟡 Em fase final de ajustes
-✔️ Funcional para uso real
-🔜 Deploy público e compra de domínio
+🔜 Deploy em produção e domínio próprio
 
-🗺 Próximos Passos (Roadmap)
+🗺 Roadmap (Próximos Passos)
 
-Deploy em produção
+Deploy em produção (HTTPS)
+
+Domínio personalizado
 
 Autenticação por e-mail (SMTP)
 
@@ -117,6 +193,8 @@ CI/CD
 Monitoramento e logs
 
 Melhorias de UX/UI
+
+Multi-empresa (SaaS)
 
 👨‍💻 Autor
 
