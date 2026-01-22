@@ -97,9 +97,16 @@
 
     statusPedido: {
       type: String,
-      enum: ["novo", "em preparo", "pronto", "saiu", "entregue", "cancelado"],
+      enum: [
+        "novo",
+        "em preparo",
+        "saiu",
+        "concluido",
+        "cancelado"
+      ],
       default: "novo"
     },
+    
 
     dataPedido: {
       type: Date,

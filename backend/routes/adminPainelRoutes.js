@@ -43,16 +43,20 @@ router.patch("/pedidos/:id/status", authMiddlewareAdmin, async (req, res) => {
     const { status } = req.body;
 
     const pedido = await Pedido.findById(req.params.id);
-    if (!pedido) return res.status(404).json({ error: "Pedido não encontrado" });
+    if (!pedido) {
+      return res.status(404).json({ error: "Pedido não encontrado" });
+    }
 
-    pedido.statusPagamento = status;
+    pedido.statusPedido = status;
     await pedido.save();
 
-    res.json({ message: "Status atualizado", pedido });
+    res.json({ message: "Status do pedido atualizado", pedido });
   } catch (err) {
+    console.error("Erro ao atualizar status:", err);
     res.status(500).json({ error: err.message });
   }
 });
+
 
 /**
  * Confirmar pagamento PIX
@@ -169,7 +173,11 @@ router.get("/relatorio", authMiddlewareAdmin, async (req, res) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const pedidosHoje = await Pedido.find({ dataPedido: { $gte: hoje } });
+    const pedidosHoje = await Pedido.find({
+      dataPedido: { $gte: hoje },
+      statusPagamento: "pago"
+    });
+    
 
     const totalDinheiro = pedidosHoje
       .filter(p => p.pagamento === "dinheiro")
