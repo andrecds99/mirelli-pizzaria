@@ -1,169 +1,180 @@
 /**
- * MENU - MIRELLI PIZZARIA
+ * MENU - MIRELLI PIZZARIA 
  */
 
-const pizzas = [
-  {id:1, category:'Pizzas Salgadas', name:'Arretada', description:'Calabresa moída, ovos, cebola e pimenta', price:52.00},
-  {id:2, category:'Pizzas Salgadas', name:'Baiana', description:'Calabresa moída, ovos, cebola, pimenta e muçarela', price:54.00},
-  {id:3, category:'Pizzas Salgadas', name:'Caipira', description:'Frango, milho e catupiry', price:54.00},
-  {id:4, category:'Pizzas Doces', name:'Chocolate', description:'Creme de chocolate premium com granulado', price:50.00},
-  {id:5, category:'Bebidas Sem Álcool', name:'Coca Cola 2L', description:'Refrigerante Coca Cola 2 litros', price:12.00},
-  {id:6, category:'Bebidas Alcoólicas', name:'Cerveja 350ml', description:'Cerveja gelada 350ml', price:8.00}
+const produtos = [
+  // PIZZAS SALGADAS
+  { id: 1, categoria: "pizzas-salgadas", tipo: "pizza", nome: "Arretada", descricao: "Calabresa moída, ovos, cebola e pimenta", preco: 52 },
+  { id: 2, categoria: "pizzas-salgadas", tipo: "pizza", nome: "Baiana", descricao: "Calabresa moída, ovos, cebola, pimenta e muçarela", preco: 54 },
+  { id: 3, categoria: "pizzas-salgadas", tipo: "pizza", nome: "Caipira", descricao: "Frango, milho e catupiry", preco: 54 },
+
+  // PIZZAS DOCES
+  { id: 4, categoria: "pizzas-doces", tipo: "pizza", nome: "Chocolate", descricao: "Creme de chocolate premium com granulado", preco: 50 },
+
+  // BEBIDAS
+  { id: 5, categoria: "bebidas-sem-alcool", tipo: "bebida", nome: "Coca-Cola 2L", descricao: "Refrigerante 2 litros", preco: 12 },
+  { id: 6, categoria: "bebidas-alcoolicas", tipo: "bebida", nome: "Cerveja 350ml", descricao: "Cerveja gelada", preco: 8 }
 ];
 
-let carrinho = [];
-let pizzaSelecionada = null;
+let produtoSelecionado = null;
 let primeiraMetade = null;
-let esperandoSegundaMetade = false;
+let aguardandoSegundaMetade = false;
 
-// === Renderiza o cardápio ===
-function renderMenu(){
-  const cardapio = document.getElementById('cardapio');
-  cardapio.innerHTML = '';
+// ===============================
+// RENDERIZA MENU
+// ===============================
+function renderMenu() {
+  const cardapio = document.getElementById("cardapio");
+  cardapio.innerHTML = "";
 
-  const categorias = [...new Set(pizzas.map(p => p.category))];
+  const categorias = [...new Set(produtos.map(p => p.categoria))];
+
   categorias.forEach(cat => {
-    const sec = document.createElement('div');
-    sec.className = 'category';
-    sec.id = cat.replace(/\s+/g, '-').toLowerCase();
-    sec.innerHTML = `<h2>${cat}</h2>`;
-    pizzas.filter(p => p.category === cat).forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'pizza';
-      div.innerHTML = `
-        <div>
-          <strong>${p.name}</strong>
-          <p>${p.description}</p>
-          <small>R$ ${p.price.toFixed(2)}</small>
-        </div>
-        <button onclick="abrirModal(${p.id})">Adicionar</button>
-      `;
-      sec.appendChild(div);
-    });
+    const sec = document.createElement("div");
+    sec.className = "category";
+    sec.id = cat;
+
+    sec.innerHTML = `<h2>${formatarTitulo(cat)}</h2>`;
+
+    produtos
+      .filter(p => p.categoria === cat)
+      .forEach(p => {
+        const div = document.createElement("div");
+        div.className = "pizza";
+        div.innerHTML = `
+          <div>
+            <strong>${p.nome}</strong>
+            <p>${p.descricao}</p>
+            <small>R$ ${p.preco.toFixed(2)}</small>
+          </div>
+          <button onclick="clicarProduto(${p.id})">Adicionar</button>
+        `;
+        sec.appendChild(div);
+      });
+
     cardapio.appendChild(sec);
   });
 }
+
+function formatarTitulo(cat) {
+  return cat.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+}
+
 renderMenu();
 
-// === Abre o modal ===
-function abrirModal(id) {
-  pizzaSelecionada = pizzas.find(p => p.id === id);
+// ===============================
+// CLIQUE NO PRODUTO
+// ===============================
+function clicarProduto(id) {
+  produtoSelecionado = produtos.find(p => p.id === id);
 
-  // Caso esteja esperando a segunda metade
-  if (esperandoSegundaMetade && primeiraMetade) {
-    adicionarSegundaMetade(pizzaSelecionada);
+  if (produtoSelecionado.tipo === "bebida") {
+    carrinho.push({
+      produto: {
+        nome: produtoSelecionado.nome
+      },
+      preco: produtoSelecionado.preco,
+      quantidade: 1
+    });
+
+    atualizarCarrinho();
+    mostrarMensagemCarrinho("🥤 Bebida adicionada ao carrinho!");
     return;
   }
 
-  // Caso normal: abre o modal
-  document.getElementById("modalPizzaNome").innerText = pizzaSelecionada.name;
-  document.getElementById("modalPizzaDescricao").innerText = pizzaSelecionada.description;
-  document.getElementById("modalPizzaPreco").innerText = pizzaSelecionada.price.toFixed(2);
+  // Pizza
+  abrirModalPizza();
+}
+
+// ===============================
+// MODAL PIZZA
+// ===============================
+function abrirModalPizza() {
+  document.getElementById("modalPizzaNome").innerText = produtoSelecionado.nome;
+  document.getElementById("modalPizzaDescricao").innerText = produtoSelecionado.descricao;
+  document.getElementById("modalPizzaPreco").innerText = produtoSelecionado.preco.toFixed(2);
+  document.getElementById("precoFinal").innerText = produtoSelecionado.preco.toFixed(2);
+
   document.getElementById("pizzaTamanho").value = "normal";
-  document.getElementById("opcoesBordaTamanho").style.display = "block";
+  document.getElementById("borda").value = "sem";
+
+  document.getElementById("opcoesBordaTamanho").style.display = "none";
   document.getElementById("modal").style.display = "block";
 
-  removerSelecaoInteiraMetade();
-  atualizarPreco();
-
-  const botaoAdicionar = document.querySelector(".modal-buttons button:first-child");
-  botaoAdicionar.disabled = true;
-  botaoAdicionar.style.opacity = "0.5";
-  botaoAdicionar.style.cursor = "not-allowed";
+  desabilitarBotaoAdicionar();
 }
 
-// === Fecha o modal ===
-function fecharModal() {
-  document.getElementById("modal").style.display = "none";
-}
-
-// === Atualiza preço conforme tamanho ===
-function atualizarPreco() {
-  if (!pizzaSelecionada) return;
-  let preco = pizzaSelecionada.price;
-  const tamanho = document.getElementById("pizzaTamanho").value;
-  if (tamanho === "broto") preco -= 20;
-  if (tamanho === "gigante") preco += 30;
-  document.getElementById("precoFinal").innerText = preco.toFixed(2);
-}
-
-// === Seleção de Inteira / Metade ===
-function removerSelecaoInteiraMetade(){
-  document.querySelectorAll("#opcaoInteiraMeia button").forEach(btn => {
-    btn.style.background = "";
-    btn.style.color = "";
-    btn.classList.remove("ativo");
-  });
-}
-
+// ===============================
+// INTEIRA / METADE
+// ===============================
 function selecionarInteira() {
-  removerSelecaoInteiraMetade();
-  const botao = document.querySelector("#opcaoInteiraMeia button:nth-child(1)");
-  botao.classList.add("ativo");
-  botao.style.background = "#8B0000";
-  botao.style.color = "#fff";
-
-  esperandoSegundaMetade = false;
+  aguardandoSegundaMetade = false;
   primeiraMetade = null;
 
-  // Habilita botão de adicionar
-  const botaoAdicionar = document.querySelector(".modal-buttons button:first-child");
-  botaoAdicionar.disabled = false;
-  botaoAdicionar.style.opacity = "1";
-  botaoAdicionar.style.cursor = "pointer";
+  document.getElementById("opcoesBordaTamanho").style.display = "block";
+  atualizarPreco();
+  habilitarBotaoAdicionar();
 }
 
 function selecionarMeia() {
-  removerSelecaoInteiraMetade();
-  const botao = document.querySelector("#opcaoInteiraMeia button:nth-child(2)");
-  botao.classList.add("ativo");
-  botao.style.background = "#8B0000";
-  botao.style.color = "#fff";
-
-  primeiraMetade = pizzaSelecionada;
-  esperandoSegundaMetade = true;
+  primeiraMetade = produtoSelecionado;
+  aguardandoSegundaMetade = true;
 
   fecharModal();
-  mostrarMensagemCarrinho("🍕 Falta escolher a outra metade da pizza!");
+  mostrarMensagemCarrinho("🍕 Agora escolha a outra metade da pizza!");
 }
 
-// === Adiciona a segunda metade ===
-function adicionarSegundaMetade(pizza) {
-  const tamanho = document.getElementById("pizzaTamanho").value || "normal";
-  const borda = document.getElementById("borda").value || "sem";
+// ===============================
+// PREÇO
+// ===============================
+function atualizarPreco() {
+  let preco = produtoSelecionado.preco;
+  const tamanho = document.getElementById("pizzaTamanho").value;
 
-  // preço médio das duas metades
-  const preco = ((primeiraMetade.price + pizza.price) / 2).toFixed(2);
+  if (tamanho === "broto") preco -= 15;
+  if (tamanho === "gigante") preco += 40;
 
-  carrinho.push({
-    nome: `${primeiraMetade.name} / ${pizza.name} (Metade a Metade)`,
-    tamanho,
-    borda,
-    preco: parseFloat(preco)
-  });
-
-  esperandoSegundaMetade = false;
-  primeiraMetade = null;
-
-  atualizarCarrinho();
-  mostrarMensagemCarrinho("✅ Pizza metade a metade adicionada ao carrinho!");
+  document.getElementById("precoFinal").innerText = preco.toFixed(2);
 }
 
-// === Adiciona pizza ao carrinho ===
+// ===============================
+// ADICIONAR AO CARRINHO
+// ===============================
 function adicionarPizzaAoCarrinho() {
   const tamanho = document.getElementById("pizzaTamanho").value;
   const borda = document.getElementById("borda").value;
   const preco = parseFloat(document.getElementById("precoFinal").innerText);
 
-  if (!pizzaSelecionada) return;
-
   carrinho.push({
-    nome: pizzaSelecionada.name,
-    tamanho,
-    borda,
-    preco
+    produto: {
+      nome: produtoSelecionado.nome,
+      tamanho,
+      borda
+    },
+    preco,
+    quantidade: 1
   });
 
   atualizarCarrinho();
   fecharModal();
+  mostrarMensagemCarrinho("🍕 Pizza adicionada ao carrinho!");
+}
+
+// ===============================
+// MODAL
+// ===============================
+function fecharModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+function desabilitarBotaoAdicionar() {
+  const btn = document.querySelector(".modal-buttons button");
+  btn.disabled = true;
+  btn.style.opacity = "0.5";
+}
+
+function habilitarBotaoAdicionar() {
+  const btn = document.querySelector(".modal-buttons button");
+  btn.disabled = false;
+  btn.style.opacity = "1";
 }
