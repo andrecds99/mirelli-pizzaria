@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import { initSocket, disconnectSocket } from "../socket";
 import RelatorioCaixa from "../components/RelatorioCaixa";
+import PrintPedido from "../components/PrintPedido";
 
 /* ===============================
-   UTIL: COR DO PEDIDO POR TEMPO
+   COR DO PEDIDO POR TEMPO
 ================================ */
 function getPedidoClass(pedido) {
-  if (pedido.statusPedido === "entregue") return "pedido-entregue";
+  if (pedido.statusPedido === "concluido") return "pedido-entregue";
   if (pedido.statusPedido === "cancelado") return "pedido-cancelado";
 
   const criadoEm = new Date(pedido.dataPedido);
@@ -19,12 +20,25 @@ function getPedidoClass(pedido) {
   return "pedido-atrasado";
 }
 
+/* ===============================
+   FLUXO DE STATUS
+================================ */
+const fluxoStatus = {
+  novo: ["em preparo", "cancelado"],
+  "em preparo": ["saiu", "cancelado"],
+  saiu: ["concluido", "cancelado"],
+  concluido: [],
+  cancelado: []
+};
+
+
 export default function Pedidos({ token, onLogout }) {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aba, setAba] = useState("ativos");
 
   /* ===============================
-     SOCKET + LOAD INICIAL
+     SOCKET + LOAD
   ================================ */
   useEffect(() => {
     const socket = initSocket(token);
@@ -42,7 +56,7 @@ export default function Pedidos({ token, onLogout }) {
   }, [token]);
 
   /* ===============================
-     ATUALIZA CORES A CADA 1 MIN
+     ATUALIZA CORES
   ================================ */
   useEffect(() => {
     const timer = setInterval(() => {
@@ -56,8 +70,7 @@ export default function Pedidos({ token, onLogout }) {
     try {
       const res = await api.get("/adminPainel/pedidos");
       setPedidos(res.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Erro ao carregar pedidos");
     } finally {
       setLoading(false);
@@ -65,37 +78,65 @@ export default function Pedidos({ token, onLogout }) {
   }
 
   /* ===============================
+     FILTRO POR ABAS
+  ================================ */
+  const pedidosFiltrados = pedidos.filter(p => {
+    if (aba === "ativos") {
+      return !["concluido", "cancelado"].includes(p.statusPedido);
+    }
+    if (aba === "concluidos") {
+      return p.statusPedido === "concluido";
+    }
+    if (aba === "cancelados") {
+      return p.statusPedido === "cancelado";
+    }
+    return true;
+  });
+  
+
+  /* ===============================
      AÇÕES
   ================================ */
-  async function atualizarStatusPedido(id, statusPedido) {
+  async function atualizarStatusPedido(id, novoStatus) {
+    const pedidoAtual = pedidos.find(p => p._id === id);
+    if (!pedidoAtual) return;
+  
+    if (!fluxoStatus[pedidoAtual.statusPedido].includes(novoStatus)) {
+      alert("Fluxo de status inválido");
+      return;
+    }
+  
     try {
-      await api.patch(`/adminPainel/pedidos/${id}/status`, {
-        status: statusPedido
+      const res = await api.patch(`/adminPainel/pedidos/${id}/status`, {
+        status: novoStatus
       });
-
+  
+      const pedidoAtualizado = res.data.pedido;
+  
       setPedidos(prev =>
         prev.map(p =>
-          p._id === id ? { ...p, statusPedido } : p
+          p._id === id ? pedidoAtualizado : p
         )
       );
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("Erro ao atualizar status");
     }
   }
-
+  
   async function confirmarPagamento(id) {
     try {
       await api.post(`/adminPainel/pedidos/${id}/confirmar`);
+  
       setPedidos(prev =>
         prev.map(p =>
           p._id === id ? { ...p, statusPagamento: "pago" } : p
         )
       );
-    } catch (err) {
-      console.error(err);
+    } catch {
+      alert("Erro ao confirmar pagamento");
     }
   }
+  
 
   function logout() {
     localStorage.removeItem("adminToken");
@@ -110,67 +151,49 @@ export default function Pedidos({ token, onLogout }) {
 
   return (
     <div className="admin-container">
-      {/* TOPO */}
       <header className="topbar">
         <h2>Painel Administrativo</h2>
         <button onClick={logout}>Logout</button>
       </header>
 
-      {/* LISTA */}
+      {/* ABAS */}
+      <div className="controls">
+        <button onClick={() => setAba("ativos")}>🟢 Ativos</button>
+        <button onClick={() => setAba("concluidos")}>✅ Concluídos</button>
+        <button onClick={() => setAba("cancelados")}>❌ Cancelados</button>
+      </div>
+
       <div className="pedidos-lista">
-        {pedidos.map(pedido => (
-          <div
-            key={pedido._id}
-            className={`pedido-card ${getPedidoClass(pedido)}`}
-          >
+        {pedidosFiltrados.map(pedido => (
+          <div key={pedido._id} className={`pedido-card ${getPedidoClass(pedido)}`}>
             <h3>Pedido #{pedido.numeroPedido}</h3>
 
-            {/* CLIENTE */}
             <p><strong>Cliente:</strong> {pedido.clienteInfo?.nome}</p>
             <p><strong>Telefone:</strong> {pedido.clienteInfo?.telefone}</p>
 
-            {/* ENTREGA */}
-            <p>
-              <strong>Entrega:</strong>{" "}
-              {pedido.metodoEntrega === "retirada"
-                ? "Retirada no balcão"
-                : "Delivery"}
-            </p>
-
-            {pedido.metodoEntrega === "delivery" && pedido.endereco && (
+            {pedido.endereco && (
               <p>
                 <strong>Endereço:</strong>{" "}
-                {pedido.endereco.logradouro}, {pedido.endereco.numero} -{" "}
-                {pedido.endereco.bairro}
+                {pedido.endereco.logradouro}, {pedido.endereco.numero}
               </p>
             )}
 
-            {/* ITENS */}
-            <div className="itens">
-              <strong>Itens:</strong>
-              <ul>
-                {pedido.itens.map((item, i) => (
+            <ul>
+              {pedido.itens.map((item, i) => {
+                const produto = item.produto || item;
+                return (
                   <li key={i}>
-                    🍕 {item.produto.nome}<br />
-                    Tamanho: {item.produto.tamanho}<br />
-                    Borda: {item.produto.borda}<br />
-                    Obs: {item.produto.observacoes || "-"}<br />
+                    🍕 {produto.nome}<br />
+                    Tam: {produto.tamanho || item.tamanho || "-"} | 
+                    Borda: {produto.borda || item.borda || "-"}<br />
+                    Obs: {produto.observacoes || "-"}<br />
                     Qtd: {item.quantidade} | R$ {item.preco.toFixed(2)}
                   </li>
-                ))}
-              </ul>
-            </div>
+                );
+              })}
+            </ul>
 
-            {/* PAGAMENTO */}
             <p><strong>Pagamento:</strong> {pedido.pagamento}</p>
-            {pedido.pagamento === "dinheiro" && pedido.trocoPara && (
-              <p><strong>Troco para:</strong> R$ {pedido.trocoPara}</p>
-            )}
-
-            <p>
-              <strong>Status pagamento:</strong>{" "}
-              <span>{pedido.statusPagamento}</span>
-            </p>
 
             {pedido.statusPagamento === "pendente" && (
               <button onClick={() => confirmarPagamento(pedido._id)}>
@@ -178,34 +201,32 @@ export default function Pedidos({ token, onLogout }) {
               </button>
             )}
 
-            {/* STATUS PEDIDO */}
-            <div className="status">
-              <label>Status do pedido:</label>
-              <select
-                value={pedido.statusPedido}
-                onChange={e =>
-                  atualizarStatusPedido(pedido._id, e.target.value)
-                }
-              >
-                <option value="novo">Novo</option>
-                <option value="em preparo">Em preparo</option>
-                <option value="pronto">Pronto</option>
-                <option value="saiu">Saiu para entrega</option>
-                <option value="entregue">Entregue</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
+            <select
+              value={pedido.statusPedido}
+              onChange={e =>
+                atualizarStatusPedido(pedido._id, e.target.value)
+              }
+            >
+              <option value={pedido.statusPedido}>
+                {pedido.statusPedido}
+              </option>
 
-            {/* TOTAL */}
-            <p className="total">
-              <strong>Total:</strong> R$ {pedido.total.toFixed(2)}
-            </p>
+              {fluxoStatus[pedido.statusPedido].map(status => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+
+            <p><strong>Total:</strong> R$ {pedido.total.toFixed(2)}</p>
+
+            <PrintPedido pedido={pedido} />
           </div>
         ))}
       </div>
 
-      {/* FECHAMENTO */}
-      <RelatorioCaixa />
+      {/* CAIXA → SÓ PEDIDOS PAGOS */}
+      <RelatorioCaixa pedidos={pedidos.filter(p => p.statusPagamento === "pago")} />
     </div>
   );
 }

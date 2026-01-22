@@ -46,26 +46,33 @@ export default function PrintPedido({ pedido }) {
           <p><strong>Cliente:</strong> ${pedido.clienteInfo?.nome || "-"}</p>
           <p><strong>Telefone:</strong> ${pedido.clienteInfo?.telefone || "-"}</p>
 
-          ${
-            pedido.metodoEntrega === "delivery"
-              ? `<p><strong>Endereço:</strong> ${pedido.endereco.logradouro}, ${pedido.endereco.numero}</p>`
-              : `<p><strong>Retirada no balcão</strong></p>`
-          }
+          ${pedido.metodoEntrega === "delivery"
+          ? `<p><strong>Endereço:</strong> ${pedido.endereco.logradouro}, ${pedido.endereco.numero} - ${pedido.endereco.bairro}, ${pedido.endereco.cidade} - CEP: ${pedido.endereco.cep}</p>
+             ${pedido.endereco.observacoes ? `<p><strong>Obs. entrega:</strong> ${pedido.endereco.observacoes}</p>` : ""}`
+          : `<p><strong>Retirada no balcão</strong></p>`
+        }
+        
 
           <hr />
 
-          ${pedido.itens
-            .map(
-              i => `
-                <div class="item">
-                  ${i.quantidade}x ${i.produto.nome}<br/>
-                  Tam: ${i.produto.tamanho || "-"} | Borda: ${i.produto.borda || "-"}<br/>
-                  Obs: ${i.produto.observacoes || "-"}<br/>
-                  R$ ${i.preco.toFixed(2)}
-                </div>
-              `
-            )
-            .join("")}
+          ${pedido.itens.map(i => `
+          <div class="item">
+            ${i.quantidade}x ${i.produto?.nome || i.nome}<br/>
+        
+            Tam: ${i.produto?.tamanho || i.tamanho || "-"}<br/>
+            Borda: ${i.produto?.borda || i.borda || "-"}<br/>
+        
+            ${i.produto?.sabor || i.sabor
+              ? `Sabor: ${i.produto?.sabor || i.sabor}<br/>`
+              : ""
+            }
+        
+            Obs: ${i.produto?.observacoes || i.observacoes || "-"}<br/>
+        
+            R$ ${i.preco.toFixed(2)}
+          </div>
+        `).join("")}
+        
 
           <hr />
 
