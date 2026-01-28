@@ -137,3 +137,8 @@ button:hover {
 .itens li {
   margin-bottom: 4px;
 }
+
+.pedido-taxa-pendente {
+  border: 2px solid #ff4d4d;
+  background: #fff5f5;
+}

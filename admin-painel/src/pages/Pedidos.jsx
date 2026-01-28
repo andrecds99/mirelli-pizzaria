@@ -97,6 +97,8 @@ export default function Pedidos({ token, onLogout }) {
   /* ===============================
      AÇÕES
   ================================ */
+
+
   async function atualizarStatusPedido(id, novoStatus) {
     const pedidoAtual = pedidos.find(p => p._id === id);
     if (!pedidoAtual) return;
@@ -164,7 +166,7 @@ export default function Pedidos({ token, onLogout }) {
       </div>
 
       <div className="pedidos-lista">
-        {pedidosFiltrados.map(pedido => (
+      {pedidosFiltrados.map(pedido => (
           <div key={pedido._id} className={`pedido-card ${getPedidoClass(pedido)}`}>
             <h3>Pedido #{pedido.numeroPedido}</h3>
 
@@ -194,6 +196,59 @@ export default function Pedidos({ token, onLogout }) {
             </ul>
 
             <p><strong>Pagamento:</strong> {pedido.pagamento}</p>
+
+            {/* ===== TAXA DE ENTREGA ===== */}
+            {pedido.metodoEntrega === "delivery" && (
+              <div style={{ marginTop: "6px" }}>
+                <p>
+                  <strong>Taxa de entrega:</strong>{" "}
+                  {pedido.taxaEntrega?.status === "pendente" ? (
+                    <span style={{ color: "red", fontWeight: "bold" }}>
+                      ⚠️ PENDENTE (ligar para o cliente)
+                    </span>
+                  ) : (
+                    `R$ ${pedido.taxaEntrega?.valor.toFixed(2)}`
+                  )}
+                </p>
+                  
+                {/* INPUT PARA DEFINIR TAXA */}
+                {pedido.taxaEntrega?.status === "pendente" && (
+                  <input
+                    type="number"
+                    placeholder="Definir taxa (R$)"
+                    style={{ width: "140px", marginTop: "4px" }}
+                    onKeyDown={async e => {
+                      if (e.key === "Enter") {
+                        const valor = Number(e.target.value);
+                      
+                        if (isNaN(valor) || valor < 0) {
+                          alert("Valor inválido");
+                          return;
+                        }
+                      
+                        try {
+                          const res = await api.patch(
+                            `/adminPainel/pedidos/${pedido._id}/taxa-entrega`,
+                            { valor }
+                          );
+                          
+                          setPedidos(prev =>
+                            prev.map(p =>
+                              p._id === pedido._id ? res.data.pedido : p
+                            )
+                          );
+                            
+                          e.target.value = "";
+                        } catch {
+                          alert("Erro ao definir taxa");
+                        }
+                      }
+                    }}
+                  />
+                )}
+              </div>
+            )}
+            
 
             {pedido.statusPagamento === "pendente" && (
               <button onClick={() => confirmarPagamento(pedido._id)}>
