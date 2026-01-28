@@ -19,6 +19,8 @@ const produtos = [
 let produtoSelecionado = null;
 let primeiraMetade = null;
 let aguardandoSegundaMetade = false;
+let tamanhoSelecionado = null;
+let bordaSelecionada = null;
 
 // ===============================
 // RENDERIZA MENU
@@ -70,9 +72,7 @@ function clicarProduto(id) {
 
   if (produtoSelecionado.tipo === "bebida") {
     carrinho.push({
-      produto: {
-        nome: produtoSelecionado.nome
-      },
+      produto: { nome: produtoSelecionado.nome },
       preco: produtoSelecionado.preco,
       quantidade: 1
     });
@@ -82,7 +82,6 @@ function clicarProduto(id) {
     return;
   }
 
-  // Pizza
   abrirModalPizza();
 }
 
@@ -117,11 +116,11 @@ function selecionarInteira() {
 }
 
 function selecionarMeia() {
-  primeiraMetade = produtoSelecionado;
   aguardandoSegundaMetade = true;
 
-  fecharModal();
-  mostrarMensagemCarrinho("🍕 Agora escolha a outra metade da pizza!");
+  document.getElementById("opcoesBordaTamanho").style.display = "block";
+  atualizarPreco();
+  habilitarBotaoAdicionar();
 }
 
 // ===============================
@@ -132,7 +131,6 @@ function atualizarPreco() {
   const tamanho = document.getElementById("pizzaTamanho").value;
 
   if (tamanho === "broto") preco -= 15;
-  if (tamanho === "gigante") preco += 40;
 
   document.getElementById("precoFinal").innerText = preco.toFixed(2);
 }
@@ -143,15 +141,57 @@ function atualizarPreco() {
 function adicionarPizzaAoCarrinho() {
   const tamanho = document.getElementById("pizzaTamanho").value;
   const borda = document.getElementById("borda").value;
-  const preco = parseFloat(document.getElementById("precoFinal").innerText);
+  const precoAtual = produtoSelecionado.preco;
 
+  // PRIMEIRA METADE
+  if (aguardandoSegundaMetade && !primeiraMetade) {
+    primeiraMetade = {
+      nome: produtoSelecionado.nome,
+      preco: precoAtual
+    };
+
+    tamanhoSelecionado = tamanho;
+    bordaSelecionada = borda;
+
+    fecharModal();
+    mostrarMensagemCarrinho("🍕 Falta selecionar a outra metade da pizza!");
+    return;
+  }
+
+  // SEGUNDA METADE
+  if (aguardandoSegundaMetade && primeiraMetade) {
+    const precoFinal = Math.max(primeiraMetade.preco, precoAtual);
+
+    carrinho.push({
+      produto: {
+        nome: `Meia ${primeiraMetade.nome} / Meia ${produtoSelecionado.nome}`,
+        tamanho: tamanhoSelecionado,
+        borda: bordaSelecionada
+      },
+      preco: precoFinal,
+      quantidade: 1
+    });
+
+    // reset
+    aguardandoSegundaMetade = false;
+    primeiraMetade = null;
+    tamanhoSelecionado = null;
+    bordaSelecionada = null;
+
+    atualizarCarrinho();
+    fecharModal();
+    mostrarMensagemCarrinho("🍕 Pizza meio a meio adicionada ao carrinho!");
+    return;
+  }
+
+  // PIZZA INTEIRA
   carrinho.push({
     produto: {
       nome: produtoSelecionado.nome,
       tamanho,
       borda
     },
-    preco,
+    preco: precoAtual,
     quantidade: 1
   });
 

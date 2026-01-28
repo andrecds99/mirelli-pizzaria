@@ -37,13 +37,22 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   });
 
-  resumo.innerHTML += `<h3>Total: R$ ${total.toFixed(2)}</h3>`;
+  resumo.innerHTML += `<h3>Total estimado: R$ ${total.toFixed(2)}</h3>`;
+
+  // ===============================
+  // INFO TAXA (SÓ VISUAL)
+  // ===============================
+  const taxaInfo = document.getElementById("taxaEntregaInfo");
+  taxaInfo.innerText =
+    "🚚 A taxa de entrega será confirmada após análise do endereço";
 
   // ===============================
   // ENDEREÇO VISUAL
   // ===============================
   document.getElementById("enderecoCadastrado").innerText =
-    cliente.endereco || "Nenhum endereço cadastrado";
+    cliente.endereco
+      ? `${cliente.endereco}, ${cliente.numero} - ${cliente.bairro}`
+      : "Nenhum endereço cadastrado";
 
   // ===============================
   // ENDEREÇO ALTERNATIVO
@@ -63,8 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const pixInfo = document.getElementById("pixInfo");
 
   pagamentoSelect.addEventListener("change", () => {
-    blocoTroco.style.display = pagamentoSelect.value === "dinheiro" ? "block" : "none";
-    pixInfo.style.display = pagamentoSelect.value === "pix" ? "block" : "none";
+    blocoTroco.style.display =
+      pagamentoSelect.value === "dinheiro" ? "block" : "none";
+    pixInfo.style.display =
+      pagamentoSelect.value === "pix" ? "block" : "none";
   });
 });
 
@@ -102,6 +113,7 @@ async function confirmarPedido() {
       }
     }
 
+    // ENDEREÇO
     let endereco;
     if (document.getElementById("usarEnderecoAlternativo").checked) {
       endereco = {
@@ -119,11 +131,12 @@ async function confirmarPedido() {
         bairro: cliente.bairro || "",
         cidade: cliente.cidade || "",
         cep: cliente.cep || "",
-        observacoes: document.getElementById("obsEntregaCadastrado")?.value || ""
+        observacoes:
+          document.getElementById("obsEntregaCadastrado")?.value || ""
       };
     }
 
-    // PAYLOAD FINAL
+    // PAYLOAD FINAL (SEM TAXA)
     const payload = {
       itens: pedido.itens.map(item => ({
         produto: {
@@ -148,7 +161,7 @@ async function confirmarPedido() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Idempotency-Key": crypto.randomUUID()
       },
       body: JSON.stringify(payload)
@@ -157,7 +170,7 @@ async function confirmarPedido() {
     if (!res.ok) throw new Error(await res.text());
 
     localStorage.removeItem("pedidoEmAndamento");
-    alert("Pedido realizado com sucesso!");
+    alert("Pedido enviado! Aguarde confirmação da entrega.");
     window.location.href = "pedido-sucesso.html";
 
   } catch (err) {
