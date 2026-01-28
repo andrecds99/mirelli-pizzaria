@@ -63,6 +63,15 @@
       validate: v => v.length > 0
     },
 
+    taxaEntrega: {
+      valor: { type: Number, default: 0 },
+      status: {
+        type: String,
+        enum: ["definida", "pendente"],
+        default: "pendente"
+      }
+    },    
+
     total: {
       type: Number,
       required: true

@@ -36,3 +36,6 @@ initSocket(server);
 server.listen(process.env.PORT || 3000, () => {
     console.log(`🚀 Servidor rodando em http://localhost:${process.env.PORT || 3000}`);
 });
+
+const taxaEntregaRoutes = require("./routes/taxaEntregaRoutes");
+app.use("/api/admin/taxas-entrega", taxaEntregaRoutes);

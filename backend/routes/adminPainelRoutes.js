@@ -1,4 +1,3 @@
-// routes/adminPainelRoutes.js
 const express = require("express");
 const router = express.Router();
 const Pedido = require("../models/Pedido");
@@ -9,15 +8,24 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Listar pedidos com filtros opcionais: status, pagamento, período
+ * LISTAR PEDIDOS
+ * filtros:
+ *  - status
+ *  - pagamento
+ *  - periodo=hoje
+ *  - taxaPendente=true
  */
 router.get("/pedidos", authMiddlewareAdmin, async (req, res) => {
   try {
-    const { status, pagamento, periodo } = req.query;
-    let filtro = {};
+    const { status, pagamento, periodo, taxaPendente } = req.query;
+    const filtro = {};
 
-    if (status) filtro.statusPagamento = status;
+    if (status) filtro.statusPedido = status;
     if (pagamento) filtro.pagamento = pagamento;
+
+    if (taxaPendente === "true") {
+      filtro["taxaEntrega.status"] = "pendente";
+    }
 
     if (periodo === "hoje") {
       const hoje = new Date();
@@ -36,7 +44,7 @@ router.get("/pedidos", authMiddlewareAdmin, async (req, res) => {
 });
 
 /**
- * Atualizar status de um pedido
+ * ATUALIZAR STATUS DO PEDIDO
  */
 router.patch("/pedidos/:id/status", authMiddlewareAdmin, async (req, res) => {
   try {
@@ -50,16 +58,14 @@ router.patch("/pedidos/:id/status", authMiddlewareAdmin, async (req, res) => {
     pedido.statusPedido = status;
     await pedido.save();
 
-    res.json({ message: "Status do pedido atualizado", pedido });
+    res.json({ message: "Status atualizado", pedido });
   } catch (err) {
-    console.error("Erro ao atualizar status:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-
 /**
- * Confirmar pagamento PIX
+ * CONFIRMAR PAGAMENTO
  */
 router.post("/pedidos/:id/confirmar", authMiddlewareAdmin, async (req, res) => {
   try {
@@ -69,39 +75,75 @@ router.post("/pedidos/:id/confirmar", authMiddlewareAdmin, async (req, res) => {
     pedido.statusPagamento = "pago";
     await pedido.save();
 
-    res.json({ message: "Pagamento confirmado!", pedido });
+    res.json({ message: "Pagamento confirmado", pedido });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 /**
- * Fechamento de caixa e geração de PDF/CSV
+ * DEFINIR TAXA DE ENTREGA MANUALMENTE (OPERADOR)
+ */
+router.patch("/pedidos/:id/taxa-entrega", authMiddlewareAdmin, async (req, res) => {
+  try {
+    const { valor } = req.body;
+
+    if (valor === undefined || valor < 0) {
+      return res.status(400).json({ error: "Valor da taxa inválido" });
+    }
+
+    const pedido = await Pedido.findById(req.params.id);
+    if (!pedido) {
+      return res.status(404).json({ error: "Pedido não encontrado" });
+    }
+
+    pedido.taxaEntrega = {
+      valor,
+      status: "definida"
+    };
+
+    // Atualiza total somando a taxa
+    pedido.total = pedido.total + valor;
+
+    await pedido.save();
+
+    res.json({
+      message: "Taxa de entrega definida com sucesso",
+      pedido
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * FECHAMENTO DE CAIXA
  */
 router.post("/fechar-caixa", authMiddlewareAdmin, async (req, res) => {
   try {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const pedidosHoje = await Pedido.find({ dataPedido: { $gte: hoje } });
+    const pedidosHoje = await Pedido.find({
+      dataPedido: { $gte: hoje },
+      statusPagamento: "pago"
+    });
 
-    const totalDinheiro = pedidosHoje
-      .filter(p => p.pagamento === "dinheiro")
-      .reduce((sum, p) => sum + p.total, 0);
+    const soma = tipo =>
+      pedidosHoje
+        .filter(p => p.pagamento === tipo)
+        .reduce(
+          (sum, p) => sum + p.total + (p.taxaEntrega?.valor || 0),
+          0
+        );
 
-    const totalDebito = pedidosHoje
-      .filter(p => p.pagamento === "debito")
-      .reduce((sum, p) => sum + p.total, 0);
+    const totalDinheiro = soma("dinheiro");
+    const totalDebito = soma("debito");
+    const totalCredito = soma("credito");
+    const totalPix = soma("pix");
 
-    const totalCredito = pedidosHoje
-      .filter(p => p.pagamento === "credito")
-      .reduce((sum, p) => sum + p.total, 0);
-
-    const totalPix = pedidosHoje
-      .filter(p => p.pagamento === "pix")
-      .reduce((sum, p) => sum + p.total, 0);
-
-    const totalGeral = totalDinheiro + totalDebito + totalCredito + totalPix;
+    const totalGeral =
+      totalDinheiro + totalDebito + totalCredito + totalPix;
 
     const fechamento = {
       operador: req.admin.email,
@@ -114,97 +156,42 @@ router.post("/fechar-caixa", authMiddlewareAdmin, async (req, res) => {
       pedidos: pedidosHoje
     };
 
-    // Salvar auditoria
+    // Auditoria JSON
     const auditoriaPath = path.join(__dirname, "../auditoria/fechamentos.json");
-    let auditorias = [];
-    if (fs.existsSync(auditoriaPath)) {
-      auditorias = JSON.parse(fs.readFileSync(auditoriaPath));
-    }
+    const auditorias = fs.existsSync(auditoriaPath)
+      ? JSON.parse(fs.readFileSync(auditoriaPath))
+      : [];
+
     auditorias.push(fechamento);
     fs.writeFileSync(auditoriaPath, JSON.stringify(auditorias, null, 2));
 
-    // Gerar PDF
+    // PDF
     const pdfPath = path.join(__dirname, "../auditoria/fechamento-caixa.pdf");
     const doc = new PDFDocument();
     doc.pipe(fs.createWriteStream(pdfPath));
 
-    doc.fontSize(18).text("Relatório de Fechamento de Caixa", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(12).text(`Operador: ${fechamento.operador}`);
-    doc.text(`Data: ${fechamento.data}`);
-    doc.text(`Total Dinheiro: R$ ${totalDinheiro.toFixed(2)}`);
-    doc.text(`Total Débito: R$ ${totalDebito.toFixed(2)}`);
-    doc.text(`Total Crédito: R$ ${totalCredito.toFixed(2)}`);
-    doc.text(`Total PIX: R$ ${totalPix.toFixed(2)}`);
-    doc.text(`Total Geral: R$ ${totalGeral.toFixed(2)}`);
+    doc.fontSize(18).text("Fechamento de Caixa", { align: "center" });
     doc.moveDown();
 
-    doc.text("Pedidos:");
-    fechamento.pedidos.forEach((pedido, i) => {
-      doc.text(
-        `${i + 1}) Pedido #${pedido.numeroPedido} - Cliente: ${pedido.cliente?.nome || "Anônimo"} - Total: R$ ${pedido.total.toFixed(2)} - Pagamento: ${pedido.pagamento} - Status: ${pedido.statusPagamento}`
-      );
-    });
+    doc.fontSize(12)
+      .text(`Operador: ${fechamento.operador}`)
+      .text(`Total Dinheiro: R$ ${totalDinheiro.toFixed(2)}`)
+      .text(`Total Débito: R$ ${totalDebito.toFixed(2)}`)
+      .text(`Total Crédito: R$ ${totalCredito.toFixed(2)}`)
+      .text(`Total PIX: R$ ${totalPix.toFixed(2)}`)
+      .text(`Total Geral: R$ ${totalGeral.toFixed(2)}`);
 
     doc.end();
 
-    // Gerar CSV
-    const csvPath = path.join(__dirname, "../auditoria/fechamento-caixa.csv");
+    // CSV
     const parser = new Parser();
-    const csv = parser.parse(fechamento.pedidos);
-    fs.writeFileSync(csvPath, csv);
+    const csv = parser.parse(pedidosHoje);
+    fs.writeFileSync(
+      path.join(__dirname, "../auditoria/fechamento-caixa.csv"),
+      csv
+    );
 
-    res.json({
-      message: "Caixa fechado com sucesso!",
-      fechamento,
-      pdfPath: `/auditoria/fechamento-caixa.pdf`,
-      csvPath: `/auditoria/fechamento-caixa.csv`
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-/**
- * Relatório de pedidos do dia (opcional)
- */
-router.get("/relatorio", authMiddlewareAdmin, async (req, res) => {
-  try {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    const pedidosHoje = await Pedido.find({
-      dataPedido: { $gte: hoje },
-      statusPagamento: "pago"
-    });
-    
-
-    const totalDinheiro = pedidosHoje
-      .filter(p => p.pagamento === "dinheiro")
-      .reduce((sum, p) => sum + p.total, 0);
-
-    const totalDebito = pedidosHoje
-      .filter(p => p.pagamento === "debito")
-      .reduce((sum, p) => sum + p.total, 0);
-
-    const totalCredito = pedidosHoje
-      .filter(p => p.pagamento === "credito")
-      .reduce((sum, p) => sum + p.total, 0);
-
-    const totalPix = pedidosHoje
-      .filter(p => p.pagamento === "pix")
-      .reduce((sum, p) => sum + p.total, 0);
-
-    const totalGeral = totalDinheiro + totalDebito + totalCredito + totalPix;
-
-    res.json({
-      totalDinheiro,
-      totalDebito,
-      totalCredito,
-      totalPix,
-      totalGeral,
-      pedidosHoje
-    });
+    res.json({ message: "Caixa fechado com sucesso", fechamento });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
