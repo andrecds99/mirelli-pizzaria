@@ -87,6 +87,59 @@ Cliente faz pedido
 
 Esse fluxo reflete exatamente a rotina de uma pizzaria.
 
+Sistema completo de pedidos online para pizzaria, com frontend público, backend robusto, painel administrativo em tempo real e controle de pedidos via WebSocket.
+
+Projeto desenvolvido com foco em uso real, regras de negócio realistas, organização de código, boas práticas e escala futura.
+
+🚀 Funcionalidades
+👤 Cliente
+
+Cadastro de usuário com senha criptografada (bcrypt)
+
+Login autenticado com JWT
+
+Criação de pedidos online
+
+Escolha de método de pagamento (PIX, dinheiro, débito, crédito)
+
+Acompanhamento do status do pedido
+
+Checkout com fluxo realista de entrega
+
+Pedido pode ser realizado mesmo quando a taxa de entrega precisa de confirmação manual
+
+🧑‍🍳 Administração
+
+Login administrativo com autenticação JWT
+
+Painel de pedidos em tempo real (Socket.IO)
+
+Destaque visual para pedidos com taxa de entrega pendente
+
+Definição manual da taxa de entrega pelo operador
+
+Confirmação manual de pagamentos PIX
+
+Atualização do status dos pedidos
+
+Fechamento de caixa diário
+
+Geração de relatórios financeiros em PDF e CSV
+
+🧠 Regras de Negócio (Diferenciais)
+
+Cálculo da taxa de entrega centralizado no backend
+
+O frontend não define valores de taxa
+
+Pedidos com bairro não identificado são marcados como taxa pendente
+
+Operador pode resolver exceções definindo a taxa manualmente
+
+Total do pedido é recalculado após confirmação da taxa
+
+Maior segurança financeira e consistência nos relatórios
+
 🛠 Tecnologias Utilizadas
 Backend
 
@@ -114,7 +167,11 @@ React (Painel Administrativo)
 
 Axios
 
+
 Infra / Outros
+
+Infraestrutura / Ferramentas
+
 
 Git & GitHub
 
@@ -125,6 +182,9 @@ Nodemon
 Dotenv
 
 🧱 Arquitetura do Projeto
+
+🧩 Arquitetura do Projeto
+
 mirelli-pizzaria/
 ├── backend/        # API REST + Socket.IO
 ├── admin-panel/    # Painel administrativo (React)
@@ -166,17 +226,30 @@ Confirmar pagamentos
 
 Imprimir pedidos
 
+
 Separar pedidos ativos e concluídos
 
 Gerar relatórios de caixa
 
 Comunicação em tempo real via Socket.IO.
 
+Resolver taxa de entrega pendente
+
+Fechar o caixa diário
+
+Gerar relatórios financeiros
+
+A comunicação em tempo real é feita via Socket.IO.
+
 📌 Status do Projeto
 
 🟢 Funcional e utilizável em ambiente real
 🟡 Em fase final de ajustes
+
 🔜 Deploy em produção e domínio próprio
+
+✔️ Lógica pronta para uso real
+🔜 Deploy em produção e compra de domínio
 
 🗺 Roadmap (Próximos Passos)
 
