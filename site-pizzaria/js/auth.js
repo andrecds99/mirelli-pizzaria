@@ -35,7 +35,7 @@ if (formCadastro) {
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/clientes/register", {
+      const response = await fetch("http://mirelli-api.onrender.com/api/clientes/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dados)
@@ -71,7 +71,7 @@ if (formLogin) {
     const senha = document.getElementById("senhaLogin").value.trim();
 
     try {
-      const response = await fetch("http://localhost:5000/api/clientes/login", {
+      const response = await fetch("http://mirelli-api.onrender.com/api/clientes/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha })

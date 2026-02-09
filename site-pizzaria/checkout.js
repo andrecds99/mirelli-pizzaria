@@ -157,7 +157,7 @@ async function confirmarPedido() {
       telefone: cliente.telefone
     };
 
-    const res = await fetch("http://localhost:5000/api/pedidos", {
+    const res = await fetch("http://mirelli-api.onrender.com/api/pedidos", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
