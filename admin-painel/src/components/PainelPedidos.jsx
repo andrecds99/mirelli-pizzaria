@@ -2,7 +2,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://localhost:3000"); // depois trocamos pra ENV
+const API_URL = process.env.REACT_APP_API_URL;
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
+
+const socket = io(SOCKET_URL, {
+  transports: ["websocket"],
+});
 
 export default function PainelPedidos() {
   const [pedidos, setPedidos] = useState([]);
@@ -13,7 +18,7 @@ export default function PainelPedidos() {
   const buscarPedidos = useCallback(async () => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/adminPainel/pedidos${
+        `${API_URL}/api/adminPainel/pedidos${
           statusFiltro ? "?status=" + statusFiltro : ""
         }`,
         {
@@ -22,16 +27,16 @@ export default function PainelPedidos() {
       );
       setPedidos(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao buscar pedidos:", err);
     }
   }, [statusFiltro, tokenAdmin]);
 
   useEffect(() => {
     buscarPedidos();
 
-    socket.on("connect", () =>
-      console.log("🔌 Conectado ao Socket.IO")
-    );
+    socket.on("connect", () => {
+      console.log("🔌 Conectado ao Socket.IO (produção)");
+    });
 
     socket.on("new-order", (pedido) => {
       setPedidos((prev) => [pedido, ...prev]);
@@ -45,13 +50,13 @@ export default function PainelPedidos() {
   async function confirmarPagamento(id) {
     try {
       await axios.post(
-        `http://localhost:3000/api/adminPainel/pedidos/${id}/confirmar`,
+        `${API_URL}/api/adminPainel/pedidos/${id}/confirmar`,
         {},
         { headers: { Authorization: "Bearer " + tokenAdmin } }
       );
       buscarPedidos();
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao confirmar pagamento:", err);
     }
   }
 
