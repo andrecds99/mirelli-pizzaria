@@ -25,13 +25,13 @@ Backend como única fonte de verdade
 🔗 Os links públicos serão adicionados aqui
 
 Frontend Público (Clientes)
-https://seudominio.com
+https://mirelli-pizzaria-site.vercel.app/
 
 Painel Administrativo
-https://admin.seudominio.com
+https://mirelli-pizzaria-admin.vercel.app/
 
 API Backend
-https://api.seudominio.com
+https://mirelli-api.onrender.com
 
 ⚠️ Observação
 Frontend público e painel administrativo consomem a mesma API e se comunicam em tempo real via Socket.IO.
