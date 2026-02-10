@@ -7,6 +7,7 @@
  * - Persistência de sessão
  * - Preenchimento da área do cliente
  * - Logout
+ * - Histórico de pedidos
  */
 
 /* =====================================================
@@ -24,11 +25,9 @@ if (formCadastro) {
       telefone: e.target.telefone.value.trim(),
       email: e.target.email.value.trim(),
       senha: e.target.senha.value.trim(),
-
-      // 🔴 IMPORTANTE: endereço como OBJETO com campos separados (incluindo numero)
       endereco: {
         rua: e.target.rua.value.trim(),
-        numero: e.target.numero.value.trim(),  // Novo campo separado
+        numero: e.target.numero.value.trim(),
         bairro: e.target.bairro.value.trim(),
         cidade: e.target.cidade.value.trim(),
         estado: e.target.estado.value.trim()
@@ -49,7 +48,6 @@ if (formCadastro) {
         return;
       }
 
-      // ✅ Sucesso: Mostra modal de confirmação e armazena e-mail temporariamente
       alert("Código de confirmação enviado para seu e-mail!");
       document.getElementById("modalConfirmacao").style.display = "block";
       localStorage.setItem("emailCadastro", e.target.email.value.trim());
@@ -62,12 +60,10 @@ if (formCadastro) {
   });
 }
 
-// ... (outras funções como confirmarCadastro, etc., permanecem iguais)
-
 /* =====================================================
- * REDIRECIONAMENTO PARA CADASTRO (ATUALIZADO)
+ * REDIRECIONAMENTO PARA CADASTRO
  * ===================================================== */
-const btnCadastrar = document.getElementById("btnCadastrar");  
+const btnCadastrar = document.getElementById("btnCadastrar");
 
 if (btnCadastrar) {
   btnCadastrar.addEventListener("click", () => {
@@ -76,14 +72,13 @@ if (btnCadastrar) {
 }
 
 /* =====================================================
- * AUTOCOMPLETE DE CEP (ATUALIZADO)
+ * AUTOCOMPLETE DE CEP
  * ===================================================== */
 const cepInput = document.getElementById("cep");
 
 if (cepInput) {
-  // Máscara simples para CEP (00000-000)
   cepInput.addEventListener("input", (e) => {
-    let value = e.target.value.replace(/\D/g, "");  // Remove não-numéricos
+    let value = e.target.value.replace(/\D/g, "");
     if (value.length > 5) {
       value = value.slice(0, 5) + "-" + value.slice(5, 8);
     }
@@ -91,7 +86,7 @@ if (cepInput) {
   });
 
   cepInput.addEventListener("blur", async () => {
-    const cep = cepInput.value.replace(/\D/g, "");  // Remove hífen para consulta
+    const cep = cepInput.value.replace(/\D/g, "");
 
     if (cep.length !== 8) {
       alert("CEP deve ter 8 dígitos.");
@@ -107,10 +102,9 @@ if (cepInput) {
         return;
       }
 
-      // Preenche os campos automaticamente
       document.getElementById("rua").value = data.logradouro || "";
-      document.getElementById("numero").value = "";  // Deixe vazio para o usuário preencher
-      document.getElementById("bairro").value = data.bairro || "";  // Crucial para taxa de entrega
+      document.getElementById("numero").value = "";
+      document.getElementById("bairro").value = data.bairro || "";
       document.getElementById("cidade").value = data.localidade || "";
       document.getElementById("estado").value = data.uf || "";
 
@@ -154,11 +148,9 @@ if (formLogin) {
         return;
       }
 
-      // 🔐 SALVA SESSÃO
       localStorage.setItem("token", data.token);
       localStorage.setItem("clienteLogado", JSON.stringify(data.cliente));
 
-      // 🔄 Recarrega para atualizar UI
       location.reload();
 
     } catch (err) {
@@ -169,14 +161,14 @@ if (formLogin) {
 }
 
 /* =====================================================
- * PREENCHER DADOS DO CLIENTE
+ * PREENCHER DADOS DO CLIENTE (CORRIGIDO)
  * ===================================================== */
 function preencherDadosCliente(cliente) {
   if (!cliente) return;
 
   const setText = (id, valor) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = valor || "";
+    if (el) el.textContent = valor || "Não informado";
   };
 
   setText("dadosNome", cliente.nome);
@@ -184,17 +176,74 @@ function preencherDadosCliente(cliente) {
   setText("dadosTelefone", cliente.telefone);
   setText("dadosCPF", cliente.cpf);
 
-  if (cliente.endereco) {
+  // 🔧 CORREÇÃO: Formatar endereço como string a partir do objeto
+  if (cliente.endereco && typeof cliente.endereco === "object") {
     const e = cliente.endereco;
-    setText(
-      "dadosEndereco",
-      `${e.rua || ""} ${e.bairro || ""} ${e.cidade || ""} ${e.estado || ""}`.trim()
-    );
+    const enderecoFormatado = `${e.rua || ""} ${e.numero || ""}, ${e.bairro || ""}, ${e.cidade || ""} - ${e.estado || ""}`.trim();
+    setText("dadosEndereco", enderecoFormatado);
+  } else {
+    setText("dadosEndereco", cliente.endereco || "Não informado");
   }
 }
 
 /* =====================================================
- * MANTER LOGIN AO RECARREGAR
+ * MOSTRAR MEUS DADOS (INTEGRADO)
+ * ===================================================== */
+function mostrarDadosCliente() {
+  const clienteStr = localStorage.getItem("clienteLogado");
+  if (!clienteStr) {
+    alert("Você não está logado.");
+    return;
+  }
+
+  const cliente = JSON.parse(clienteStr);
+  preencherDadosCliente(cliente); // Reutiliza a função
+
+  document.getElementById("dadosCliente").style.display = "block";
+  document.getElementById("historicoCliente").style.display = "none";
+  document.getElementById("conteudoCliente").innerHTML = "<p>Dados carregados.</p>";
+}
+
+/* =====================================================
+ * MOSTRAR HISTÓRICO DE PEDIDOS (INTEGRADO)
+ * ===================================================== */
+function mostrarHistoricoCliente() {
+  const clienteStr = localStorage.getItem("clienteLogado");
+  if (!clienteStr) {
+    alert("Você não está logado.");
+    return;
+  }
+
+  const cliente = JSON.parse(clienteStr);
+  const historico = JSON.parse(localStorage.getItem(`historico_${cliente.email}`)) || [];
+
+  const lista = document.getElementById("listaHistorico");
+  lista.innerHTML = historico.length
+    ? historico.map(p => `<p>Pedido #${p.id}: ${p.itens.length} itens - R$ ${p.total.toFixed(2)}</p>`).join("")
+    : "<p>Nenhum pedido encontrado.</p>";
+
+  document.getElementById("historicoCliente").style.display = "block";
+  document.getElementById("dadosCliente").style.display = "none";
+  document.getElementById("conteudoCliente").innerHTML = "<p>Histórico carregado.</p>";
+}
+
+/* =====================================================
+ * LOGOUT (CORRIGIDO)
+ * ===================================================== */
+function sair() {
+  localStorage.removeItem("clienteLogado");
+  localStorage.removeItem("token");
+
+  // 🔧 CORREÇÃO: Ocultar área do cliente e mostrar form de login (não ocultar toda sidebar)
+  document.getElementById("areaCliente").style.display = "none";
+  const formLoginSection = document.querySelector(".sidebar section"); // Seleciona apenas a seção de login
+  if (formLoginSection) formLoginSection.style.display = "block";
+
+  location.reload(); // Recarrega para resetar
+}
+
+/* =====================================================
+ * MANTER LOGIN AO RECARREGAR (CORRIGIDO)
  * ===================================================== */
 window.addEventListener("DOMContentLoaded", () => {
   const clienteStr = localStorage.getItem("clienteLogado");
@@ -205,9 +254,11 @@ window.addEventListener("DOMContentLoaded", () => {
   try {
     const cliente = JSON.parse(clienteStr);
 
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar) sidebar.style.display = "none";
+    // 🔧 CORREÇÃO: Ocultar apenas o form de login, não toda sidebar
+    const formLoginSection = document.querySelector(".sidebar section");
+    if (formLoginSection) formLoginSection.style.display = "none";
 
+    // Mostrar área do cliente
     const areaCliente = document.getElementById("areaCliente");
     if (areaCliente) areaCliente.style.display = "block";
 
@@ -216,38 +267,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
     preencherDadosCliente(cliente);
 
+    // 🔧 ADIÇÃO: Adicionar event listeners aos botões (unificados aqui)
+    const btnDados = document.getElementById("btnDados");
+    const btnHistorico = document.getElementById("btnHistorico");
+    const btnSair = document.getElementById("btnSair");
+
+    if (btnDados) btnDados.addEventListener("click", mostrarDadosCliente);
+    if (btnHistorico) btnHistorico.addEventListener("click", mostrarHistoricoCliente);
+    if (btnSair) btnSair.addEventListener("click", sair);
+
   } catch (err) {
     console.warn("Sessão inválida. Limpando dados.");
     localStorage.removeItem("clienteLogado");
     localStorage.removeItem("token");
   }
 });
-
-/* =====================================================
- * BOTÃO "MEUS DADOS"
- * ===================================================== */
-const btnDados = document.getElementById("btnDados");
-if (btnDados) {
-  btnDados.addEventListener("click", () => {
-    const dados = document.getElementById("dadosCliente");
-    if (dados) dados.style.display = "block";
-  });
-}
-
-/* =====================================================
- * LOGOUT
- * ===================================================== */
-const btnSair = document.getElementById("btnSair");
-
-if (btnSair) {
-  btnSair.addEventListener("click", () => {
-    localStorage.removeItem("clienteLogado");
-    localStorage.removeItem("token");
-
-    const areaCliente = document.getElementById("areaCliente");
-    if (areaCliente) areaCliente.style.display = "none";
-
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar) sidebar.style.display = "block";
-  });
-}
