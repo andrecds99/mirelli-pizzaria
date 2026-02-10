@@ -46,13 +46,15 @@ document.addEventListener("DOMContentLoaded", () => {
   taxaInfo.innerText =
     "🚚 A taxa de entrega será confirmada após análise do endereço";
 
-  // ===============================
-  // ENDEREÇO VISUAL
-  // ===============================
-  document.getElementById("enderecoCadastrado").innerText =
-    cliente.endereco
-      ? `${cliente.endereco}, ${cliente.numero} - ${cliente.bairro}`
-      : "Nenhum endereço cadastrado";
+// ===============================
+// ENDEREÇO VISUAL 
+// ===============================
+document.getElementById("enderecoCadastrado").innerText =
+  cliente.endereco && typeof cliente.endereco === "object"
+    ? `${cliente.endereco.rua || ""} ${cliente.endereco.numero || ""}, ${cliente.endereco.bairro || ""},
+     ${cliente.endereco.cidade || ""} - ${cliente.endereco.estado || ""}`.trim()
+    : "Nenhum endereço cadastrado";
+
 
   // ===============================
   // ENDEREÇO ALTERNATIVO
@@ -113,29 +115,27 @@ async function confirmarPedido() {
       }
     }
 
-    // ENDEREÇO
-    let endereco;
-    if (document.getElementById("usarEnderecoAlternativo").checked) {
-      endereco = {
-        logradouro: altLogradouro.value,
-        numero: altNumero.value,
-        bairro: altBairro.value,
-        cidade: altCidade.value,
-        cep: altCep.value,
-        observacoes: altObs.value || ""
-      };
-    } else {
-      endereco = {
-        logradouro: cliente.endereco || "",
-        numero: cliente.numero || "",
-        bairro: cliente.bairro || "",
-        cidade: cliente.cidade || "",
-        cep: cliente.cep || "",
-        observacoes:
-          document.getElementById("obsEntregaCadastrado")?.value || ""
-      };
-    }
-
+     // ENDEREÇO
+  let endereco;
+  if (document.getElementById("usarEnderecoAlternativo").checked) {
+    endereco = {
+      logradouro: document.getElementById("altLogradouro").value.trim(),
+      numero: document.getElementById("altNumero").value.trim(),
+      bairro: document.getElementById("altBairro").value.trim(),
+      cidade: document.getElementById("altCidade").value.trim(),
+      cep: document.getElementById("altCep").value.trim(),
+      observacoes: document.getElementById("altObs").value.trim() || ""
+    };
+  } else {
+    endereco = {
+      logradouro: cliente.endereco?.rua || "",
+      numero: cliente.endereco?.numero || "",
+      bairro: cliente.endereco?.bairro || "",
+      cidade: cliente.endereco?.cidade || "",
+      cep: cliente.endereco?.cep || "",  // Adicione se existir no objeto; caso contrário, deixe vazio
+      observacoes: document.getElementById("obsEntregaCadastrado")?.value.trim() || ""
+    };
+  }
     // PAYLOAD FINAL (SEM TAXA)
     const payload = {
       itens: pedido.itens.map(item => ({
