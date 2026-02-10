@@ -2,9 +2,9 @@
 // CARRINHO - MIRELLI PIZZARIA
 // ===============================
 
-// Espera existir
+// Carregar carrinho do localStorage ao iniciar
 if (!window.carrinho) {
-  window.carrinho = [];
+  window.carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 }
 
 // ===============================
@@ -21,19 +21,17 @@ function atualizarCarrinho() {
   let total = 0;
 
   carrinho.forEach((item, i) => {
-    total += item.preco;
+    total += item.preco * (item.quantidade || 1); // Considera quantidade
 
     const produto = item.produto || item;
 
     cartItems.innerHTML += `
       <div class="cart-item">
         <strong>${produto.nome}</strong><br>
-
         ${produto.sabores ? `🍕 ${produto.sabores}<br>` : ""}
         ${produto.tamanho ? `Tamanho: ${produto.tamanho}<br>` : ""}
         ${produto.borda ? `Borda: ${produto.borda}<br>` : ""}
-
-        <small>R$ ${item.preco.toFixed(2)}</small>
+        <small>R$ ${item.preco.toFixed(2)} x ${item.quantidade || 1}</small>
         <button onclick="removerItem(${i})">✖</button>
       </div>
     `;
@@ -41,6 +39,9 @@ function atualizarCarrinho() {
 
   cartCount.innerText = carrinho.length;
   cartTotal.innerText = total.toFixed(2);
+
+  // Salvar no localStorage
+  localStorage.setItem("carrinho", JSON.stringify(carrinho));
 }
 
 // ===============================
@@ -57,8 +58,10 @@ function removerItem(index) {
 function toggleCart() {
   const panel = document.getElementById("cartPanel");
   if (!panel) return;
-  panel.style.display = panel.style.display === "block" ? "none" : "block";
+  const isVisible = panel.style.display === "block";
+  panel.style.display = isVisible ? "none" : "block";
 }
+
 
 // ===============================
 // MENSAGEM UX (WHATS STYLE)

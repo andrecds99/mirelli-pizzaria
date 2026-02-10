@@ -85,6 +85,7 @@ function clicarProduto(id) {
   abrirModalPizza();
 }
 
+
 // ===============================
 // MODAL PIZZA
 // ===============================
@@ -101,6 +102,10 @@ function abrirModalPizza() {
   document.getElementById("modal").style.display = "block";
 
   desabilitarBotaoAdicionar();
+
+  // Adicionar eventos para atualizar preço
+  document.getElementById("pizzaTamanho").addEventListener("change", atualizarPreco);
+  document.getElementById("borda").addEventListener("change", atualizarPreco);
 }
 
 // ===============================
@@ -109,6 +114,8 @@ function abrirModalPizza() {
 function selecionarInteira() {
   aguardandoSegundaMetade = false;
   primeiraMetade = null;
+  tamanhoSelecionado = null;
+  bordaSelecionada = null;
 
   document.getElementById("opcoesBordaTamanho").style.display = "block";
   atualizarPreco();
@@ -117,6 +124,7 @@ function selecionarInteira() {
 
 function selecionarMeia() {
   aguardandoSegundaMetade = true;
+  primeiraMetade = null; // Reset se já havia algo
 
   document.getElementById("opcoesBordaTamanho").style.display = "block";
   atualizarPreco();
@@ -131,10 +139,12 @@ function atualizarPreco() {
   const tamanho = document.getElementById("pizzaTamanho").value;
 
   if (tamanho === "broto") preco -= 15;
+  else if (tamanho === "gigante") preco += 40; // Adicionei ajuste para gigante, assumindo que estava faltando
 
   document.getElementById("precoFinal").innerText = preco.toFixed(2);
 }
 
+// ... (resto do código permanece igual)
 // ===============================
 // ADICIONAR AO CARRINHO
 // ===============================
