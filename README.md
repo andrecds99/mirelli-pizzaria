@@ -1,37 +1,70 @@
-🍕 Mirelli Pizzaria — Sistema Completo de Pedidos Online
+🍕 Mirelli Pizzaria — Sistema de Pedidos Online (Backend-Focused)
 
-Sistema completo de pedidos online desenvolvido para uso real em pizzarias, com frontend público para clientes, backend robusto e painel administrativo em tempo real.
+Sistema completo de pedidos online desenvolvido com foco em regras de negócio reais, API robusta, comunicação em tempo real e uso prático em ambiente de produção.
 
-Projeto focado em fluxo operacional real, regras de negócio consistentes, comunicação em tempo real e controle financeiro diário.
+O projeto simula fielmente o fluxo operacional de uma pizzaria, integrando frontend público, API backend e painel administrativo, todos consumindo a mesma fonte de dados e eventos.
 
-🚀 Projeto em produção / funcional, utilizado como base para estudo de escalabilidade, boas práticas e arquitetura full stack.
+🎯 Objetivo do Projeto
 
-📌 Visão Geral do Sistema
+Demonstrar domínio em:
 
-Frontend público para clientes realizarem pedidos
+Modelagem de regras de negócio reais
 
-Backend centralizando regras de negócio
+Desenvolvimento de API REST escalável
 
-Painel administrativo em tempo real para operação da pizzaria
+Comunicação em tempo real com WebSockets
 
-Comunicação instantânea via WebSocket (Socket.IO)
+Autenticação e segurança
+
+Integração entre múltiplos clientes (frontend + painel)
+
+Backend como única fonte de verdade
+
+🌐 Aplicações em Produção
+
+🔗 Os links públicos serão adicionados aqui
+
+Frontend Público (Clientes)
+https://seudominio.com
+
+Painel Administrativo
+https://admin.seudominio.com
+
+API Backend
+https://api.seudominio.com
+
+⚠️ Observação
+Frontend público e painel administrativo consomem a mesma API e se comunicam em tempo real via Socket.IO.
+
+🔄 Fluxo Operacional (Vida Real)
+Cliente cria pedido no frontend público
+→ API valida regras de negócio
+→ Pedido é persistido no banco
+→ Evento é emitido via Socket.IO
+→ Painel administrativo recebe o pedido em tempo real
+→ Admin altera status do pedido
+→ Evento retorna ao cliente em tempo real
+→ Pedido entra no fechamento de caixa
+
+
+Esse fluxo representa exatamente a rotina de operação de uma pizzaria.
 
 🚀 Funcionalidades
 👤 Cliente (Frontend Público)
 
-Cadastro e login seguro (bcrypt)
+Cadastro de usuário com confirmação por e-mail
+
+Login autenticado (JWT)
 
 Criação de pedidos completos
 
-Escolha de entrega:
+Escolha de tipo de entrega:
 
 Delivery
 
 Retirada no balcão
 
-Endereço salvo com observações
-
-Pagamento via:
+Escolha de forma de pagamento:
 
 PIX
 
@@ -41,15 +74,17 @@ Débito
 
 Crédito
 
+Endereço com observações
+
 Acompanhamento do status do pedido em tempo real
 
 🧑‍🍳 Administração (Painel Administrativo)
 
-Autenticação com JWT
+Login administrativo autenticado (JWT)
 
-Recebimento de pedidos em tempo real
+Recebimento de pedidos em tempo real (Socket.IO)
 
-Organização por status:
+Organização de pedidos por status:
 
 Novo
 
@@ -61,41 +96,61 @@ Saiu para entrega
 
 Entregue
 
-Concluído
+Concluído / Cancelado
 
-Confirmação manual de pagamentos (PIX)
+Confirmação manual de pagamentos (ex: PIX)
 
-Controle visual de tempo dos pedidos
+Destaque visual por tempo de preparo
 
-Histórico imutável de pedidos finalizados
+Histórico imutável de pedidos
 
-Fechamento de caixa por período
+Relatório de caixa por período
 
-Relatórios financeiros
+Fechamento de caixa baseado apenas em pedidos concluídos
 
-🧠 Regras de Negócio (Diferenciais Técnicos)
+Impressão de pedidos (modelo térmico 80mm)
 
-Cálculo de taxa de entrega centralizado no backend
+🧠 Regras de Negócio (Diferenciais)
 
-Frontend não define valores financeiros
+Taxa de entrega calculada exclusivamente no backend
+
+Frontend não define valores críticos
 
 Pedidos com bairro não identificado entram como taxa pendente
 
-Operador resolve exceções manualmente
+Operador define manualmente exceções
 
-Total do pedido é recalculado após confirmação
+Total do pedido é recalculado no servidor
 
-Maior segurança financeira e consistência nos relatórios
+Garantia de consistência financeira nos relatórios
 
-🔄 Fluxo Operacional (Vida Real)
+🧪 Casos Reais Cobertos
 
-Cliente realiza o pedido
-→ Pedido chega no painel em tempo real
-→ Cozinha inicia preparo
-→ Pedido sai para entrega ou retirada
-→ Pedido entregue
-→ Pagamento confirmado
-→ Pedido entra no fechamento de caixa
+Pedido com taxa de entrega indefinida
+
+Confirmação manual de pagamento PIX
+
+Atualização de status em tempo real
+
+Fechamento de caixa seguro
+
+Histórico para auditoria
+
+Comunicação simultânea entre múltiplos clientes
+
+🔐 Credenciais de Teste (Ambiente de Demonstração)
+🧑‍🍳 Admin
+Email: admin@mirelli.com
+Senha: admin123
+
+👤 Cliente (opção rápida)
+Email: andreteste@email.com
+Senha: 123456
+
+
+📌 Observação
+Também é possível criar um novo cadastro.
+O sistema envia e-mail de confirmação antes de permitir a realização de pedidos.
 
 🛠 Tecnologias Utilizadas
 Backend
@@ -106,11 +161,13 @@ Express
 
 MongoDB + Mongoose
 
-JWT
+JWT (autenticação)
 
-Bcrypt
+Bcrypt (hash de senha)
 
 Socket.IO
+
+Nodemailer (confirmação por e-mail)
 
 Frontend
 
@@ -130,23 +187,37 @@ Git & GitHub
 
 Postman
 
+Dotenv
+
 Nodemon
 
-Dotenv
+Vercel (deploy)
 
 🧱 Arquitetura do Projeto
 mirelli-pizzaria/
-├── backend/        # API REST + Socket.IO
+├── backend/        # API REST + WebSocket
 ├── admin-panel/    # Painel administrativo (React)
-├── site-pizzaria/  # Frontend público
+├── site-pizzaria/  # Frontend público (clientes)
 └── README.md
+
+📌 Princípios Arquiteturais
+
+Backend como única fonte de verdade
+
+Separação clara de responsabilidades
+
+Comunicação orientada a eventos
+
+Regras de negócio centralizadas
+
+Segurança financeira e consistência de dados
 
 ▶️ Como Rodar Localmente
 Pré-requisitos
 
 Node.js >= 18
 
-MongoDB local ou Atlas
+MongoDB (local ou Atlas)
 
 NPM ou Yarn
 
@@ -164,22 +235,19 @@ cd admin-panel
 npm install
 npm start
 
-📸 Demonstração
-
-🔜 Screenshots do sistema
-🔜 Vídeo demonstrativo do fluxo completo
-
 📌 Status do Projeto
 
-🟢 Funcional e operacional
-🟡 Em fase final de polimento e ajustes
-🔜 Deploy com domínio próprio e HTTPS
+🟢 Backend em produção e funcional
+🟡 Ajustes finais de cadastro e cardápio
+🟡 Pequenas melhorias de UX/UI
+
+Sistema já operando com pedidos fluindo entre cliente, API e painel administrativo.
 
 🗺 Roadmap
 
 Domínio personalizado
 
-HTTPS
+HTTPS completo
 
 Dockerização
 
@@ -187,12 +255,13 @@ CI/CD
 
 Monitoramento e logs
 
-Melhorias de UX/UI
-
 Multi-empresa (SaaS)
+
+Melhorias de performance
 
 👨‍💻 Autor
 
 André dos Santos
-Desenvolvedor Full Stack
+Desenvolvedor Backend / Full Stack
+
 GitHub: https://github.com/andrecds99
