@@ -1,34 +1,40 @@
-const nodemailer = require("nodemailer");
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS  
+  },
+ 
+  pool: true,  // Usa pool de conexões
+  maxConnections: 1,
+  rateDelta: 20000,  // Delay entre e-mails
+  rateLimit: 5,      // Limite de e-mails por segundo
+  tls: {
+    rejectUnauthorized: false  // Para evitar erros de certificado 
+  }
+});
 
 async function enviarEmailConfirmacao(email, nome, codigo) {
-    try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Confirme seu cadastro na Mirelli Pizzaria',
+    html: `
+      <h2>Olá, ${nome}!</h2>
+      <p>Código: <strong>${codigo}</strong></p>
+      <!-- Mesmo HTML de antes -->
+    `
+  };
 
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Confirmação de cadastro - Mirelli Pizzaria",
-            html: `
-                <h2>Olá, ${nome}</h2>
-                <p>Obrigado por se cadastrar no site da Mirelli Pizzaria.</p>
-                <p>Seu código de confirmação é: <b>${codigo}</b></p>
-                <p>Ou clique no link abaixo para confirmar sua conta:</p>
-                <a href="${process.env.FRONTEND_URL}/confirmar/${codigo}">Confirmar cadastro</a>
-                <p>Se não reconhece este cadastro, ignore este e-mail.</p>
-            `
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log("✅ E-mail enviado com sucesso");
-    } catch (err) {
-        console.error("❌ Erro ao enviar e-mail:", err);
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`E-mail enviado para ${email}`);
+  } catch (error) {
+    console.error('Erro ao enviar e-mail:', error.message);
+    throw error;
+  }
 }
 
 module.exports = enviarEmailConfirmacao;

@@ -25,17 +25,18 @@ if (formCadastro) {
       email: e.target.email.value.trim(),
       senha: e.target.senha.value.trim(),
 
-      // 🔴 IMPORTANTE: endereço como OBJETO
+      // 🔴 IMPORTANTE: endereço como OBJETO com campos separados (incluindo numero)
       endereco: {
-        rua: e.target.endereco.value.trim(),
-        bairro: "",
-        cidade: "",
-        estado: ""
+        rua: e.target.rua.value.trim(),
+        numero: e.target.numero.value.trim(),  // Novo campo separado
+        bairro: e.target.bairro.value.trim(),
+        cidade: e.target.cidade.value.trim(),
+        estado: e.target.estado.value.trim()
       }
     };
 
     try {
-      const response = await fetch("https://mirelli-api.onrender.com/api/clientes/register", {
+      const response = await fetch("https://mirelli-api.onrender.com/api/clientes/cadastro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dados)
@@ -48,12 +49,74 @@ if (formCadastro) {
         return;
       }
 
-      alert("✅ Cadastro realizado com sucesso!");
+      // ✅ Sucesso: Mostra modal de confirmação e armazena e-mail temporariamente
+      alert("Código de confirmação enviado para seu e-mail!");
+      document.getElementById("modalConfirmacao").style.display = "block";
+      localStorage.setItem("emailCadastro", e.target.email.value.trim());
       formCadastro.reset();
 
     } catch (err) {
       console.error("Erro no cadastro:", err);
       alert("Erro ao conectar ao servidor.");
+    }
+  });
+}
+
+// ... (outras funções como confirmarCadastro, etc., permanecem iguais)
+
+/* =====================================================
+ * REDIRECIONAMENTO PARA CADASTRO (ATUALIZADO)
+ * ===================================================== */
+const btnCadastrar = document.getElementById("btnCadastrar");  
+
+if (btnCadastrar) {
+  btnCadastrar.addEventListener("click", () => {
+    window.location.href = "cadastro.html";
+  });
+}
+
+/* =====================================================
+ * AUTOCOMPLETE DE CEP (ATUALIZADO)
+ * ===================================================== */
+const cepInput = document.getElementById("cep");
+
+if (cepInput) {
+  // Máscara simples para CEP (00000-000)
+  cepInput.addEventListener("input", (e) => {
+    let value = e.target.value.replace(/\D/g, "");  // Remove não-numéricos
+    if (value.length > 5) {
+      value = value.slice(0, 5) + "-" + value.slice(5, 8);
+    }
+    e.target.value = value;
+  });
+
+  cepInput.addEventListener("blur", async () => {
+    const cep = cepInput.value.replace(/\D/g, "");  // Remove hífen para consulta
+
+    if (cep.length !== 8) {
+      alert("CEP deve ter 8 dígitos.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
+
+      if (data.erro) {
+        alert("CEP não encontrado.");
+        return;
+      }
+
+      // Preenche os campos automaticamente
+      document.getElementById("rua").value = data.logradouro || "";
+      document.getElementById("numero").value = "";  // Deixe vazio para o usuário preencher
+      document.getElementById("bairro").value = data.bairro || "";  // Crucial para taxa de entrega
+      document.getElementById("cidade").value = data.localidade || "";
+      document.getElementById("estado").value = data.uf || "";
+
+    } catch (err) {
+      console.error("Erro ao buscar CEP:", err);
+      alert("Erro ao consultar CEP. Tente novamente.");
     }
   });
 }
