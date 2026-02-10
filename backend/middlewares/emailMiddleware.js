@@ -1,12 +1,11 @@
 const nodemailer = require('nodemailer');
 
-const transport = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({  
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS  
   },
- 
   pool: true,  // Usa pool de conexões
   maxConnections: 1,
   rateDelta: 20000,  // Delay entre e-mails
@@ -23,13 +22,17 @@ async function enviarEmailConfirmacao(email, nome, codigo) {
     subject: 'Confirme seu cadastro na Mirelli Pizzaria',
     html: `
       <h2>Olá, ${nome}!</h2>
-      <p>Código: <strong>${codigo}</strong></p>
-      <!-- Mesmo HTML de antes -->
+      <p>Obrigado por se cadastrar na Mirelli Pizzaria.</p>
+      <p>Seu código de confirmação é: <strong>${codigo}</strong></p>
+      <p>Insira este código no site para ativar sua conta.</p>
+      <p>Se você não solicitou este cadastro, ignore este e-mail.</p>
+      <br>
+      <p>Atenciosamente,<br>Equipe Mirelli Pizzaria</p>
     `
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);  
     console.log(`E-mail enviado para ${email}`);
   } catch (error) {
     console.error('Erro ao enviar e-mail:', error.message);
