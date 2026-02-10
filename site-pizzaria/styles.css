@@ -307,3 +307,251 @@ form button {
 .mensagem-status.erro {
   background: #dc3545;
 }
+
+
+/* ======================================
+ * CHECKOUT PAGE STYLES
+ * ====================================== */
+
+ .checkout-container {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 20px;
+  background: var(--branco);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+.checkout-container h2 {
+  color: var(--vermelho);
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.checkout-container h3 {
+  color: var(--vermelho);
+  font-size: 1.4rem;
+  margin-top: 15px;
+}
+
+.resumo-pedido {
+  margin-bottom: 20px;
+}
+
+.resumo-pedido .item {
+  background: var(--bg);
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border-left: 4px solid var(--dourado);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.resumo-pedido .item strong {
+  color: var(--vermelho);
+  font-size: 1.1rem;
+}
+
+.resumo-pedido .item textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+  font-size: 0.9rem;
+}
+
+.taxa-info {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-style: italic;
+  color: var(--texto);
+}
+
+.total-final {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--vermelho);
+  margin-bottom: 20px;
+}
+
+.bloco {
+  background: var(--bg);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bloco h3 {
+  color: var(--vermelho);
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.endereco-cadastrado {
+  background: var(--branco);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.endereco-alternativo {
+  margin-top: 15px;
+  padding: 15px;
+  background: var(--branco);
+  border: 1px dashed var(--dourado);
+  border-radius: 8px;
+  display: none;
+}
+
+.endereco-alternativo .input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.endereco-alternativo .textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.bloco-troco {
+  margin-top: 15px;
+  padding: 15px;
+  background: var(--branco);
+  border: 1px dashed var(--dourado);
+  border-radius: 8px;
+  display: none;
+}
+
+.bloco-troco .input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.pix-info {
+  margin-top: 15px;
+  padding: 15px;
+  background: var(--branco);
+  border: 1px dashed var(--dourado);
+  border-radius: 8px;
+  display: none;
+}
+
+.pix-info p {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--vermelho);
+  color: var(--branco);
+  padding: 15px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--dourado);
+  color: var(--vermelho);
+}
+
+.btn-secondary {
+  background: var(--dourado);
+  color: var(--vermelho);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--vermelho);
+  color: var(--branco);
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* Responsividade para checkout */
+@media screen and (max-width: 768px) {
+  .checkout-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .checkout-container h2 {
+    font-size: 1.5rem;
+  }
+
+  .bloco {
+    padding: 15px;
+  }
+
+  .endereco-alternativo .input,
+  .bloco-troco .input,
+  .textarea {
+    font-size: 0.9rem;
+  }
+
+  .btn-primary {
+    font-size: 1rem;
+    padding: 12px;
+  }
+}
