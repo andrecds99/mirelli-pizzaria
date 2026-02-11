@@ -24,35 +24,21 @@ Backend como única fonte de verdade
 
 🔗 Os links públicos serão adicionados aqui
 
-Frontend Público (Clientes)
-https://mirelli-pizzaria-site.vercel.app/
+Frontend Público (Clientes) https://mirelli-pizzaria-site.vercel.app/
 
-Painel Administrativo
-https://mirelli-pizzaria-admin.vercel.app/
+Painel Administrativo https://mirelli-pizzaria-admin.vercel.app/
 
-API Backend
-https://mirelli-api.onrender.com
+API Backend https://mirelli-api.onrender.com
 
-⚠️ Observação
-Frontend público e painel administrativo consomem a mesma API e se comunicam em tempo real via Socket.IO.
+⚠️ Observação Frontend público e painel administrativo consomem a mesma API e se comunicam em tempo real via Socket.IO.
 
-🔄 Fluxo Operacional (Vida Real)
-Cliente cria pedido no frontend público
-→ API valida regras de negócio
-→ Pedido é persistido no banco
-→ Evento é emitido via Socket.IO
-→ Painel administrativo recebe o pedido em tempo real
-→ Admin altera status do pedido
-→ Evento retorna ao cliente em tempo real
-→ Pedido entra no fechamento de caixa
-
+🔄 Fluxo Operacional (Vida Real) Cliente cria pedido no frontend público → API valida regras de negócio → Pedido é persistido no banco → Evento é emitido via Socket.IO → Painel administrativo recebe o pedido em tempo real → Admin altera status do pedido → Evento retorna ao cliente em tempo real → Pedido entra no fechamento de caixa
 
 Esse fluxo representa exatamente a rotina de operação de uma pizzaria.
 
-🚀 Funcionalidades
-👤 Cliente (Frontend Público)
+🚀 Funcionalidades 👤 Cliente (Frontend Público)
 
-Cadastro de usuário com confirmação por e-mail
+Cadastro de usuário com confirmação por e-mail (página dedicada com CEP autocomplete)
 
 Login autenticado (JWT)
 
@@ -138,22 +124,13 @@ Histórico para auditoria
 
 Comunicação simultânea entre múltiplos clientes
 
-🔐 Credenciais de Teste (Ambiente de Demonstração)
-🧑‍🍳 Admin
-Email: admin@mirelli.com
-Senha: admin123
+🔐 Credenciais de Teste (Ambiente de Demonstração) 🧑‍🍳 Admin Email: admin@mirelli.com Senha: admin123
 
-👤 Cliente (opção rápida)
-Email: andreteste@email.com
-Senha: 123456
+👤 Cliente (opção rápida) Email: andreteste@email.com Senha: 123456
 
+📌 Observação Também é possível criar um novo cadastro. O sistema envia e-mail de confirmação antes de permitir a realização de pedidos.
 
-📌 Observação
-Também é possível criar um novo cadastro.
-O sistema envia e-mail de confirmação antes de permitir a realização de pedidos.
-
-🛠 Tecnologias Utilizadas
-Backend
+🛠 Tecnologias Utilizadas Backend
 
 Node.js
 
@@ -167,7 +144,7 @@ Bcrypt (hash de senha)
 
 Socket.IO
 
-Nodemailer (confirmação por e-mail)
+SendGrid (confirmação por e-mail)  # ✅ Atualizado: de Nodemailer para SendGrid
 
 Frontend
 
@@ -191,14 +168,11 @@ Dotenv
 
 Nodemon
 
-Vercel (deploy)
+Vercel (deploy frontend)
 
-🧱 Arquitetura do Projeto
-mirelli-pizzaria/
-├── backend/        # API REST + WebSocket
-├── admin-panel/    # Painel administrativo (React)
-├── site-pizzaria/  # Frontend público (clientes)
-└── README.md
+Render (deploy backend)  # ✅ Adicionado para clareza
+
+🧱 Arquitetura do Projeto mirelli-pizzaria/ ├── backend/ # API REST + WebSocket ├── admin-panel/ # Painel administrativo (React) ├── site-pizzaria/ # Frontend público (clientes, incluindo cadastro.html) └── README.md
 
 📌 Princípios Arquiteturais
 
@@ -212,8 +186,7 @@ Regras de negócio centralizadas
 
 Segurança financeira e consistência de dados
 
-▶️ Como Rodar Localmente
-Pré-requisitos
+▶️ Como Rodar Localmente Pré-requisitos
 
 Node.js >= 18
 
@@ -221,25 +194,15 @@ MongoDB (local ou Atlas)
 
 NPM ou Yarn
 
-Backend
-cd backend
-npm install
-npm run dev
+Backend cd backend npm install npm run dev
 
-Frontend Público
-cd site-pizzaria
-# abrir index.html no navegador
+Frontend Público cd site-pizzaria # Abrir index.html no navegador (ou usar um servidor local para cadastro.html)
 
-Painel Administrativo
-cd admin-panel
-npm install
-npm start
+Painel Administrativo cd admin-panel npm install npm start
 
 📌 Status do Projeto
 
-🟢 Backend em produção e funcional
-🟡 Ajustes finais de cadastro e cardápio
-🟡 Pequenas melhorias de UX/UI
+🟢 Backend em produção e funcional 🟢 Cadastro completo com confirmação por e-mail e CEP autocomplete 🟡 Pequenas melhorias de UX/UI
 
 Sistema já operando com pedidos fluindo entre cliente, API e painel administrativo.
 
@@ -261,7 +224,6 @@ Melhorias de performance
 
 👨‍💻 Autor
 
-André dos Santos
-Desenvolvedor Backend / Full Stack
+André dos Santos Desenvolvedor Backend / Full Stack
 
 GitHub: https://github.com/andrecds99
