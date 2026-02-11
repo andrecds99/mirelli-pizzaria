@@ -1,24 +1,10 @@
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({  
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS  
-  },
-  pool: true,  // Usa pool de conexões
-  maxConnections: 1,
-  rateDelta: 20000,  // Delay entre e-mails
-  rateLimit: 5,      // Limite de e-mails por segundo
-  tls: {
-    rejectUnauthorized: false  // Para evitar erros de certificado 
-  }
-});
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);  // Chave do SendGrid
 
 async function enviarEmailConfirmacao(email, nome, codigo) {
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to: email,
+    from: 'mirellipizaria1@gmail.com', 
     subject: 'Confirme seu cadastro na Mirelli Pizzaria',
     html: `
       <h2>Olá, ${nome}!</h2>
@@ -32,11 +18,11 @@ async function enviarEmailConfirmacao(email, nome, codigo) {
   };
 
   try {
-    await transporter.sendMail(mailOptions);  
-    console.log(`E-mail enviado para ${email}`);
+    await sgMail.send(msg);
+    console.log(`E-mail enviado para ${email} via SendGrid`);
   } catch (error) {
-    console.error('Erro ao enviar e-mail:', error.message);
-    throw error;
+    console.error('Erro ao enviar e-mail via SendGrid:', error.message);
+    throw new Error('Falha no envio de e-mail');
   }
 }
 
