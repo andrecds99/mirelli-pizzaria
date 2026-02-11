@@ -12,6 +12,20 @@ document.addEventListener("DOMContentLoaded", () => {
   let total = 0;
 
   // ===============================
+ // FUNÇÃO PARA NORMALIZAR TEXTO (ADAPTADA PARA FRONTEND)
+ // ===============================
+function normalizarTexto(texto) {
+  if (!texto) return "";
+
+  return texto
+    .toString()
+    .normalize("NFD")                // remove acentos
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+  
+  // ===============================
   // RESUMO DO PEDIDO
   // ===============================
   pedido.itens.forEach((item, index) => {
@@ -115,13 +129,13 @@ async function confirmarPedido() {
       }
     }
 
-     // ENDEREÇO
+// ENDEREÇO
   let endereco;
   if (document.getElementById("usarEnderecoAlternativo").checked) {
     endereco = {
       logradouro: document.getElementById("altLogradouro").value.trim(),
       numero: document.getElementById("altNumero").value.trim(),
-      bairro: document.getElementById("altBairro").value.trim(),
+      bairro: normalizarTexto(document.getElementById("altBairro").value.trim()),  // 🔧 NORMALIZADO
       cidade: document.getElementById("altCidade").value.trim(),
       cep: document.getElementById("altCep").value.trim(),
       observacoes: document.getElementById("altObs").value.trim() || ""
@@ -130,9 +144,9 @@ async function confirmarPedido() {
     endereco = {
       logradouro: cliente.endereco?.rua || "",
       numero: cliente.endereco?.numero || "",
-      bairro: cliente.endereco?.bairro || "",
+      bairro: normalizarTexto(cliente.endereco?.bairro || ""),  // 🔧 NORMALIZADO
       cidade: cliente.endereco?.cidade || "",
-      cep: cliente.endereco?.cep || "",  // Adicione se existir no objeto; caso contrário, deixe vazio
+      cep: cliente.endereco?.cep || "",
       observacoes: document.getElementById("obsEntregaCadastrado")?.value.trim() || ""
     };
   }

@@ -116,6 +116,59 @@ if (cepInput) {
 }
 
 /* =====================================================
+ * CONFIRMAÇÃO DE CADASTRO
+ * ===================================================== */
+async function confirmarCadastro() {
+  const email = localStorage.getItem("emailCadastro");
+  const codigo = document.getElementById("codigoConfirmacao").value.trim();
+
+  if (!email || !codigo) {
+    alert("Preencha o código.");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://mirelli-api.onrender.com/api/clientes/confirmar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, codigo })
+    });
+
+    const resultado = await response.json();
+    if (response.ok) {
+      alert("Conta confirmada! Faça o login na página inicial.");
+      document.getElementById("modalConfirmacao").style.display = "none";
+      localStorage.removeItem("emailCadastro");
+      window.location.href = "index.html";
+    } else {
+      alert(resultado.error || "Erro na confirmação.");
+    }
+  } catch (err) {
+    alert("Erro ao conectar ao servidor.");
+  }
+}
+
+function fecharModalConfirmacao() {
+  document.getElementById("modalConfirmacao").style.display = "none";
+  localStorage.removeItem("emailCadastro");
+}
+
+/* =====================================================
+ * EVENT LISTENERS PARA O MODAL DE CONFIRMAÇÃO
+ * ===================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  const btnConfirmar = document.getElementById("btnConfirmar");
+  const btnFecharModal = document.getElementById("btnFecharModal");
+
+  if (btnConfirmar) {
+    btnConfirmar.addEventListener("click", confirmarCadastro);
+  }
+  if (btnFecharModal) {
+    btnFecharModal.addEventListener("click", fecharModalConfirmacao);
+  }
+});
+
+/* =====================================================
  * LOGIN DO CLIENTE
  * ===================================================== */
 const formLogin = document.getElementById("formLogin");

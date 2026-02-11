@@ -34,14 +34,14 @@
         </section>
     </main>
 
-    <!-- Modal de Confirmação -->
-    <div id="modalConfirmacao" style="display: none;">
-        <h3>Confirme seu Cadastro</h3>
-        <p>Insira o código enviado para seu e-mail:</p>
-        <input type="text" id="codigoConfirmacao" placeholder="Código de 6 dígitos" required>
-        <button onclick="confirmarCadastro()">Confirmar</button>
-        <button onclick="fecharModalConfirmacao()">Cancelar</button>
-    </div>
+<!-- Modal de Confirmação -->
+<div id="modalConfirmacao" style="display: none;">
+    <h3>Confirme seu Cadastro</h3>
+    <p>Insira o código enviado para seu e-mail:</p>
+    <input type="text" id="codigoConfirmacao" placeholder="Código de 6 dígitos" required>
+    <button id="btnConfirmar">Confirmar</button>  
+    <button id="btnFecharModal">Cancelar</button>  
+</div>
 
     <script src="js/auth.js"></script>
 </body>
