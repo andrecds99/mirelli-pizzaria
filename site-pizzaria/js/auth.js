@@ -122,6 +122,7 @@ async function confirmarCadastro() {
   const email = localStorage.getItem("emailCadastro");
   const codigo = document.getElementById("codigoConfirmacao").value.trim();
 
+  
   if (!email || !codigo) {
     alert("Preencha o código.");
     return;

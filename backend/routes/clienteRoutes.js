@@ -53,12 +53,23 @@ router.post('/confirmar', async (req, res) => {
         const cliente = await Cliente.findOne({ email });
         if (!cliente) return res.status(400).json({ error: "E-mail não encontrado" });
 
-        if (cliente.codigoConfirmacao !== codigo) {
+
+        // 🔧 MELHORIA: Normalize a comparação (remova espaços e converta para string)
+        const codigoSalvo = String(cliente.codigoConfirmacao).trim();
+        const codigoEnviado = String(codigo).trim();
+
+        if (codigoSalvo !== codigoEnviado) {
             return res.status(400).json({ error: "Código de confirmação inválido" });
         }
 
+        // 🔧 ADIÇÃO: Verifique expiração se implementada
+        if (cliente.expiraEm && cliente.expiraEm < new Date()) {
+            return res.status(400).json({ error: "Código expirado. Solicite um novo." });
+        }
+
         cliente.confirmado = true;
-        cliente.codigoConfirmacao = null;
+        cliente.codigoConfirmacao = null;  // Limpe o código após confirmação
+        cliente.expiraEm = null;  // Limpe expiração se existir
         await cliente.save();
 
         res.json({ message: "Conta confirmada com sucesso!" });
