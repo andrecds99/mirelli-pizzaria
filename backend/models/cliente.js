@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 
 const enderecoSchema = new mongoose.Schema({
-  logradouro: String,
+  rua: String,        
   numero: String,
   bairro: String,
   cidade: String,
-  cep: String,
-  observacoes: String
+  estado: String
 }, { _id: false });
 
 const clienteSchema = new mongoose.Schema({
@@ -14,13 +13,7 @@ const clienteSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   senha: String,
   telefone: String,
-
-  // 🔥 agora pode ser string antiga OU objeto novo
-  endereco: {
-    type: mongoose.Schema.Types.Mixed,
-    default: null
-  },
-
+  endereco: enderecoSchema,  
   confirmado: { type: Boolean, default: false },
   tokenConfirmacao: String,
   expiraEm: Date

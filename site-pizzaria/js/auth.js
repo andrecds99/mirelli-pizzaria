@@ -11,7 +11,7 @@
  */
 
 /* =====================================================
- * CADASTRO DE CLIENTE
+ * CADASTRO DE CLIENTE 
  * ===================================================== */
 const formCadastro = document.getElementById("formCadastro");
 
@@ -48,9 +48,10 @@ if (formCadastro) {
         return;
       }
 
-      alert("Código de confirmação enviado para seu e-mail!");
+      // ✅ Alterado: Salva e-mail e redireciona para página de instruções (em vez de modal/código)
+      alert("Cadastro realizado! Verifique seu e-mail para confirmar.");
       localStorage.setItem("emailCadastro", e.target.email.value.trim());
-      window.location.href = "confirmacao.html";  // ✅ Redireciona para página dedicada
+      window.location.href = "aguarde-confirmacao.html";  // Página simples com instruções
       formCadastro.reset();
 
     } catch (err) {
@@ -59,6 +60,35 @@ if (formCadastro) {
     }
   });
 }
+
+/* =====================================================
+ * REENVIAR E-MAIL (REFATORADO PARA TOKEN)
+ * ===================================================== */
+async function reenviarEmail() {
+  const email = localStorage.getItem("emailCadastro");
+  if (!email) {
+    alert("E-mail não encontrado. Faça o cadastro novamente.");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://mirelli-api.onrender.com/api/clientes/reenviar-confirmacao", {  // Nova rota sugerida
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+
+    const resultado = await response.json();
+    if (response.ok) {
+      alert("E-mail reenviado!");
+    } else {
+      alert(resultado.error || "Erro ao reenviar.");
+    }
+  } catch (err) {
+    alert("Erro ao conectar ao servidor.");
+  }
+}
+
 
 /* =====================================================
  * REDIRECIONAMENTO PARA CADASTRO
@@ -114,73 +144,6 @@ if (cepInput) {
     }
   });
 }
-
-/* =====================================================
- * CONFIRMAÇÃO DE CADASTRO (ATUALIZADO PARA PÁGINA)
- * ===================================================== */
-const formConfirmacao = document.getElementById("formConfirmacao");
-
-if (formConfirmacao) {
-  formConfirmacao.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = localStorage.getItem("emailCadastro");
-    const codigo = document.getElementById("codigoConfirmacao").value.trim();
-
-    if (!email || !codigo) {
-      alert("Preencha o código.");
-      return;
-    }
-
-    try {
-      const response = await fetch("https://mirelli-api.onrender.com/api/clientes/confirmar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, codigo })
-      });
-
-      const resultado = await response.json();
-      if (response.ok) {
-        alert("Conta confirmada! Faça o login na página inicial.");
-        localStorage.removeItem("emailCadastro");
-        window.location.href = "index.html";
-      } else {
-        alert(resultado.error || "Erro na confirmação.");
-      }
-    } catch (err) {
-      alert("Erro ao conectar ao servidor.");
-    }
-  });
-}
-
-/* =====================================================
- * REENVIAR E-MAIL (OPCIONAL)
- * ===================================================== */
-async function reenviarEmail() {
-  const email = localStorage.getItem("emailCadastro");
-  if (!email) {
-    alert("E-mail não encontrado. Faça o cadastro novamente.");
-    return;
-  }
-
-  try {
-    const response = await fetch("https://mirelli-api.onrender.com/api/clientes/esqueci-senha", {  // Reutiliza rota existente
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-
-    const resultado = await response.json();
-    if (response.ok) {
-      alert("E-mail reenviado!");
-    } else {
-      alert(resultado.error || "Erro ao reenviar.");
-    }
-  } catch (err) {
-    alert("Erro ao conectar ao servidor.");
-  }
-}
-
 /* =====================================================
  * EVENT LISTENERS PARA O MODAL DE CONFIRMAÇÃO
  * ===================================================== */

@@ -11,21 +11,32 @@ const crypto = require('crypto');
  * Acesso: Público
  */
 router.post('/cadastro', async (req, res) => {
+    console.log("Requisição recebida no cadastro:", req.body);  // Log dos dados recebidos
+
     const { nome, email, senha, telefone, endereco } = req.body;
 
     if (!senha || senha.length < 6) {
+        console.log("Erro: Senha inválida ou curta");
         return res.status(400).json({ error: "Senha deve ter pelo menos 6 caracteres." });
     }
 
     try {
+        console.log("Verificando cliente existente...");
         const clienteExistente = await Cliente.findOne({ email });
         if (clienteExistente) {
+            console.log("Erro: E-mail já cadastrado");
             return res.status(400).json({ error: "E-mail já cadastrado" });
         }
 
-        const tokenConfirmacao = crypto.randomUUID();  // Gera token único
-        const expiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000);  // 24 horas
+        console.log("Gerando hash da senha...");
+        const senhaHash = await bcrypt.hash(senha, 10);
+        console.log("Hash gerado:", senhaHash ? "Sucesso" : "Falhou");
 
+        console.log("Gerando token...");
+        const tokenConfirmacao = crypto.randomUUID();
+        const expiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        console.log("Criando novo cliente...");
         const novoCliente = new Cliente({
             nome,
             email,
@@ -37,17 +48,28 @@ router.post('/cadastro', async (req, res) => {
             expiraEm
         });
 
+        console.log("Salvando no banco...");
         await novoCliente.save();
-        await enviarEmailConfirmacao(email, nome, tokenConfirmacao);
+        console.log("Cliente salvo com sucesso");
 
+        console.log("Enviando e-mail...");
+        try {
+            await enviarEmailConfirmacao(email, nome, tokenConfirmacao);
+            console.log("E-mail enviado");
+        } catch (emailError) {
+            console.error('Erro no envio de e-mail:', emailError.message);
+        }
+
+        console.log("Cadastro concluído");
         res.status(201).json({
             message: "Cliente cadastrado com sucesso. Verifique seu e-mail para confirmação."
         });
     } catch (err) {
+        console.error("Erro geral no cadastro:", err.message);
+        console.error("Stack:", err.stack);  // Log completo do erro
         res.status(500).json({ error: err.message });
     }
 });
-
 /**
  * Rota: Confirmação de cadastro
  * Acesso: Público
