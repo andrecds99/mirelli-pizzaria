@@ -49,8 +49,8 @@ if (formCadastro) {
       }
 
       alert("Código de confirmação enviado para seu e-mail!");
-      document.getElementById("modalConfirmacao").style.display = "block";
       localStorage.setItem("emailCadastro", e.target.email.value.trim());
+      window.location.href = "confirmacao.html";  // ✅ Redireciona para página dedicada
       formCadastro.reset();
 
     } catch (err) {
@@ -116,42 +116,69 @@ if (cepInput) {
 }
 
 /* =====================================================
- * CONFIRMAÇÃO DE CADASTRO
+ * CONFIRMAÇÃO DE CADASTRO (ATUALIZADO PARA PÁGINA)
  * ===================================================== */
-async function confirmarCadastro() {
-  const email = localStorage.getItem("emailCadastro");
-  const codigo = document.getElementById("codigoConfirmacao").value.trim();
+const formConfirmacao = document.getElementById("formConfirmacao");
 
-  
-  if (!email || !codigo) {
-    alert("Preencha o código.");
+if (formConfirmacao) {
+  formConfirmacao.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = localStorage.getItem("emailCadastro");
+    const codigo = document.getElementById("codigoConfirmacao").value.trim();
+
+    if (!email || !codigo) {
+      alert("Preencha o código.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://mirelli-api.onrender.com/api/clientes/confirmar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, codigo })
+      });
+
+      const resultado = await response.json();
+      if (response.ok) {
+        alert("Conta confirmada! Faça o login na página inicial.");
+        localStorage.removeItem("emailCadastro");
+        window.location.href = "index.html";
+      } else {
+        alert(resultado.error || "Erro na confirmação.");
+      }
+    } catch (err) {
+      alert("Erro ao conectar ao servidor.");
+    }
+  });
+}
+
+/* =====================================================
+ * REENVIAR E-MAIL (OPCIONAL)
+ * ===================================================== */
+async function reenviarEmail() {
+  const email = localStorage.getItem("emailCadastro");
+  if (!email) {
+    alert("E-mail não encontrado. Faça o cadastro novamente.");
     return;
   }
 
   try {
-    const response = await fetch("https://mirelli-api.onrender.com/api/clientes/confirmar", {
+    const response = await fetch("https://mirelli-api.onrender.com/api/clientes/esqueci-senha", {  // Reutiliza rota existente
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, codigo })
+      body: JSON.stringify({ email })
     });
 
     const resultado = await response.json();
     if (response.ok) {
-      alert("Conta confirmada! Faça o login na página inicial.");
-      document.getElementById("modalConfirmacao").style.display = "none";
-      localStorage.removeItem("emailCadastro");
-      window.location.href = "index.html";
+      alert("E-mail reenviado!");
     } else {
-      alert(resultado.error || "Erro na confirmação.");
+      alert(resultado.error || "Erro ao reenviar.");
     }
   } catch (err) {
     alert("Erro ao conectar ao servidor.");
   }
-}
-
-function fecharModalConfirmacao() {
-  document.getElementById("modalConfirmacao").style.display = "none";
-  localStorage.removeItem("emailCadastro");
 }
 
 /* =====================================================

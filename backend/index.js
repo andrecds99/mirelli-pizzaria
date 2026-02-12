@@ -35,6 +35,7 @@ app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin/taxas-entrega", taxaEntregaRoutes);
 
 // Health check
+app.get("/health", (req, res) => res.status(200).send("OK"));
 app.get("/", (req, res) => res.send("Servidor rodando!"));
 
 /* ===============================

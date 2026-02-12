@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirme seu Cadastro - Mirelli Pizzaria</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span>Mirelli Pizzaria</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="confirmacao-section">
+            <h2>Confirme seu Cadastro</h2>
+            <p>Enviamos um código de 6 dígitos para seu e-mail. Insira-o abaixo para ativar sua conta.</p>
+            <form id="formConfirmacao">
+                <input type="text" id="codigoConfirmacao" placeholder="Código de 6 dígitos" required maxlength="6">
+                <button type="submit">Confirmar</button>
+                <button type="button" onclick="window.location.href='cadastro.html'">Voltar ao Cadastro</button>
+            </form>
+            <p>Não recebeu o e-mail? Verifique sua caixa de spam ou <a href="#" onclick="reenviarEmail()">clique aqui para reenviar</a>.</p>
+        </section>
+    </main>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
