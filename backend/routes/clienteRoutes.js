@@ -13,6 +13,10 @@ const crypto = require('crypto');
 router.post('/cadastro', async (req, res) => {
     const { nome, email, senha, telefone, endereco } = req.body;
 
+    if (!senha || senha.length < 6) {
+        return res.status(400).json({ error: "Senha deve ter pelo menos 6 caracteres." });
+    }
+
     try {
         const clienteExistente = await Cliente.findOne({ email });
         if (clienteExistente) {
