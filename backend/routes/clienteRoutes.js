@@ -3,7 +3,7 @@ const router = express.Router();
 const Cliente = require('../models/cliente');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const enviarEmailConfirmacao = require('../middlewares/emailMiddleware');
+const { enviarEmailConfirmacao }= require('../middlewares/emailMiddleware');
 const crypto = require('crypto');
 
 /**
