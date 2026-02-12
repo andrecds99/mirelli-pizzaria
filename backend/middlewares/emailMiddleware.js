@@ -1,9 +1,9 @@
-const sgMail = require('@sendgrid/mail');  // ✅ Adicionado: Import do SendGrid
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);  // ✅ Adicionado: Configuração da API key
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 
 async function enviarEmailConfirmacao(email, nome, token) {
-  const linkConfirmacao = `https://mirelli-pizzaria-site.vercel.app/confirmar-token?token=${token}`;
-  
+  const linkConfirmacao = `https://mirelli-pizzaria-site.vercel.app/confirmacao.html?token=${token}`; 
   const msg = {
     to: email,
     from: 'mirellipizaria1@gmail.com',
