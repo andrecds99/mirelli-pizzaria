@@ -25,3 +25,5 @@ async function enviarEmailConfirmacao(email, nome, token) {
     throw new Error('Falha no envio de e-mail');
   }
 }
+
+module.exports = { enviarEmailConfirmacao };  

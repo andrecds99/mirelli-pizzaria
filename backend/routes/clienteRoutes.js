@@ -14,6 +14,11 @@ router.post('/cadastro', async (req, res) => {
     console.log("Requisição recebida no cadastro:", req.body);  // Log dos dados recebidos
 
     const { nome, email, senha, telefone, endereco } = req.body;
+    
+    if (!endereco || !endereco.rua || !endereco.bairro) {
+    console.log("Erro: Endereço incompleto");
+    return res.status(400).json({ error: "Endereço deve incluir rua e bairro." });
+    }
 
     if (!senha || senha.length < 6) {
         console.log("Erro: Senha inválida ou curta");
@@ -70,6 +75,34 @@ router.post('/cadastro', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+/**
+ * Rota: Reenviar e-mail
+ * Acesso: Público
+ */
+
+
+router.post('/reenviar-confirmacao', async (req, res) => {
+    const { email } = req.body;
+    
+    try {
+        const cliente = await Cliente.findOne({ email });
+        if (!cliente) return res.status(400).json({ error: "E-mail não encontrado" });
+        
+        if (cliente.confirmado) return res.status(400).json({ error: "Conta já confirmada" });
+        
+        const tokenConfirmacao = crypto.randomUUID();
+        cliente.tokenConfirmacao = tokenConfirmacao;
+        cliente.expiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await cliente.save();
+        
+        await enviarEmailConfirmacao(email, cliente.nome, tokenConfirmacao);
+        res.json({ message: "E-mail reenviado." });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 /**
  * Rota: Confirmação de cadastro
  * Acesso: Público
@@ -190,3 +223,4 @@ router.post('/redefinir-senha', async (req, res) => {
 });
 
 module.exports = router;
+
