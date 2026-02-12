@@ -2,30 +2,26 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirme seu Cadastro - Mirelli Pizzaria</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Confirmando...</title>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <span>Mirelli Pizzaria</span>
-        </div>
-    </header>
-
-    <main>
-        <section class="confirmacao-section">
-            <h2>Confirme seu Cadastro</h2>
-            <p>Enviamos um código de 6 dígitos para seu e-mail. Insira-o abaixo para ativar sua conta.</p>
-            <form id="formConfirmacao">
-                <input type="text" id="codigoConfirmacao" placeholder="Código de 6 dígitos" required maxlength="6">
-                <button type="submit">Confirmar</button>
-                <button type="button" onclick="window.location.href='cadastro.html'">Voltar ao Cadastro</button>
-            </form>
-            <p>Não recebeu o e-mail? Verifique sua caixa de spam ou <a href="#" onclick="reenviarEmail()">clique aqui para reenviar</a>.</p>
-        </section>
-    </main>
-
-    <script src="js/auth.js"></script>
+    <h2>Confirmando seu cadastro...</h2>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (token) {
+            fetch(`https://mirelli-api.onrender.com/api/clientes/confirmar-token?token=${token}`)
+                .then(response => response.text())
+                .then(data => {
+                    document.body.innerHTML = data;  // Mostra mensagem de sucesso
+                })
+                .catch(err => {
+                    document.body.innerHTML = "<h2>Erro na confirmação.</h2>";
+                });
+        } else {
+            document.body.innerHTML = "<h2>Token não encontrado.</h2>";
+        }
+    </script>
 </body>
 </html>

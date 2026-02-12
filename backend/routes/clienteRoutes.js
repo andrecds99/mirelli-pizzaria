@@ -4,6 +4,7 @@ const Cliente = require('../models/cliente');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const enviarEmailConfirmacao = require('../middlewares/emailMiddleware');
+const crypto = require('crypto');
 
 /**
  * Rota: Cadastro de cliente
@@ -18,8 +19,8 @@ router.post('/cadastro', async (req, res) => {
             return res.status(400).json({ error: "E-mail já cadastrado" });
         }
 
-        const senhaHash = await bcrypt.hash(senha, 10);
-        const codigoConfirmacao = Math.floor(100000 + Math.random() * 900000).toString();
+        const tokenConfirmacao = crypto.randomUUID();  // Gera token único
+        const expiraEm = new Date(Date.now() + 24 * 60 * 60 * 1000);  // 24 horas
 
         const novoCliente = new Cliente({
             nome,
@@ -28,11 +29,12 @@ router.post('/cadastro', async (req, res) => {
             telefone,
             endereco,
             confirmado: false,
-            codigoConfirmacao
+            tokenConfirmacao,
+            expiraEm
         });
 
         await novoCliente.save();
-        await enviarEmailConfirmacao(email, nome, codigoConfirmacao);
+        await enviarEmailConfirmacao(email, nome, tokenConfirmacao);
 
         res.status(201).json({
             message: "Cliente cadastrado com sucesso. Verifique seu e-mail para confirmação."
@@ -46,35 +48,28 @@ router.post('/cadastro', async (req, res) => {
  * Rota: Confirmação de cadastro
  * Acesso: Público
  */
-router.post('/confirmar', async (req, res) => {
-    const { email, codigo } = req.body;
-
+router.get('/confirmar-token', async (req, res) => {
+    const { token } = req.query;
+    
     try {
-        const cliente = await Cliente.findOne({ email });
-        if (!cliente) return res.status(400).json({ error: "E-mail não encontrado" });
-
-
-        // 🔧 MELHORIA: Normalize a comparação (remova espaços e converta para string)
-        const codigoSalvo = String(cliente.codigoConfirmacao).trim();
-        const codigoEnviado = String(codigo).trim();
-
-        if (codigoSalvo !== codigoEnviado) {
-            return res.status(400).json({ error: "Código de confirmação inválido" });
+        const cliente = await Cliente.findOne({ tokenConfirmacao: token });
+        if (!cliente) return res.status(400).send("Token inválido ou expirado.");
+        
+        if (cliente.expiraEm < new Date()) {
+            return res.status(400).send("Token expirado. Faça um novo cadastro.");
         }
-
-        // 🔧 ADIÇÃO: Verifique expiração se implementada
-        if (cliente.expiraEm && cliente.expiraEm < new Date()) {
-            return res.status(400).json({ error: "Código expirado. Solicite um novo." });
-        }
-
+        
         cliente.confirmado = true;
-        cliente.codigoConfirmacao = null;  // Limpe o código após confirmação
-        cliente.expiraEm = null;  // Limpe expiração se existir
+        cliente.tokenConfirmacao = null;  // Limpa token
+        cliente.expiraEm = null;
         await cliente.save();
-
-        res.json({ message: "Conta confirmada com sucesso!" });
+        
+        res.send(`
+            <h2>Conta confirmada com sucesso!</h2>
+            <p><a href="https://mirelli-pizzaria-site.vercel.app">Faça login aqui</a></p>
+        `);  // Página simples de sucesso
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).send("Erro interno.");
     }
 });
 

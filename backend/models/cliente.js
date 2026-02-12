@@ -22,7 +22,7 @@ const clienteSchema = new mongoose.Schema({
   },
 
   confirmado: { type: Boolean, default: false },
-  codigoConfirmacao: String,
+  tokenConfirmacao: String,
   expiraEm: Date
 });
 
